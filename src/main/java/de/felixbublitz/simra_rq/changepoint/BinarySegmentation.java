@@ -19,7 +19,7 @@ public class BinarySegmentation extends ChangepointAlgorithm {
         ArrayList<Integer> changePoints = new ArrayList<Integer>();
 
         for(int i=s; i<t; i++){
-            double cmin = getCosts(s,i) + getCosts(i+1, t) + penalty;
+            double cmin = getCosts(s,i) + getCosts(i+1, t) + getPenalty();
             if(cmin < min && cmin < getCosts(s,t)){
                 min = cmin;
                 index = i;

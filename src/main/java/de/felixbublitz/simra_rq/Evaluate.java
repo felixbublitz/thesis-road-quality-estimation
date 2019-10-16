@@ -1,6 +1,7 @@
 package de.felixbublitz.simra_rq;
 
 
+import de.felixbublitz.simra_rq.changepoint.BinarySegmentation;
 import de.felixbublitz.simra_rq.changepoint.PELT;
 import de.felixbublitz.simra_rq.data.*;
 import de.felixbublitz.simra_rq.data.db.AnomolieData;
@@ -29,11 +30,14 @@ public class Evaluate {
         ArrayList<Double> magnitudes = dataset.getMagnitudes();
         ArrayList<Double> filteredMagnitudes = Filter.applyHighpass(magnitudes, dataset.getSamplingRate(), 2);
 
-        ArrayList<DataSegment> dataSegments = SegmentDetection.getSegments(filteredMagnitudes, new PELT(1));
+        ArrayList<DataSegment> dataSegments = SegmentDetection.getSegments(filteredMagnitudes, new BinarySegmentation(5));
 
         //detect anomalies
-        ArrayList<Integer> peaks = AnomolieDetection.getPeaks(dataSegments);
-        ArrayList<Integer> evasions = AnomolieDetection.getEvasions(dataset.getDirectedAccelerometerData(SimraData.Axis.Y));
+        ArrayList<Integer> peaks = AnomolieDetection.getPeaks(magnitudes, dataSegments, 1, 10);
+        //ArrayList<Integer> evasions = AnomolieDetection.getEvasions(dataset.getDirectedAccelerometerData(SimraData.Axis.Y));
+
+
+
 
         //determine track
         Track track = new Track(dataset.getGPSData());
@@ -42,12 +46,12 @@ public class Evaluate {
         //map data to track
         ArrayList<RoughnessData> roughnessData = RoadMapper.mapSegments(dataSegments, track);
         ArrayList<AnomolieData> anomolieData1 = RoadMapper.mapAnomolies(peaks, track);
-        ArrayList<AnomolieData> anomolieData2 = RoadMapper.mapAnomolies(evasions, track);
+        //ArrayList<AnomolieData> anomolieData2 = RoadMapper.mapAnomolies(evasions, track);
 
         //save in database
         db.insert(roughnessData);
         db.insert(anomolieData1);
-        db.insert(anomolieData2);
+        //db.insert(anomolieData2);
     }
 
 

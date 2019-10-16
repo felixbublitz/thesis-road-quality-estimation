@@ -11,7 +11,7 @@ public class PELT extends ChangepointAlgorithm {
     List<ArrayList<Integer>> r;
     List<Double> f;
     List<Tuple> futureTau;
-    double k = -penalty; //0?
+    double k = -getPenalty(); //0?
 
     public PELT(int penalty) {
         super(penalty);
@@ -33,7 +33,7 @@ public class PELT extends ChangepointAlgorithm {
         r.add(first);
 
 
-        f.add(-penalty);
+        f.add(-getPenalty());
 
         for(int taust=1; taust<data.size(); taust++){
             int tauone = getCurrentTau(taust);
@@ -49,13 +49,9 @@ public class PELT extends ChangepointAlgorithm {
                 changePoints.add(curr);
             i = curr;
         }
-        Collections.sort(changePoints);
-
-        if(changePoints.size() != 0 && changePoints.get(changePoints.size()-1) != changePoints.size())
-            changePoints.add(changePoints.size());
-
-        return changePoints;
+       return changePoints;
     }
+
 
     private ArrayList<Integer> getNextTaus(int taust){
         ArrayList<Integer> out = new ArrayList<Integer>();
@@ -78,8 +74,8 @@ public class PELT extends ChangepointAlgorithm {
 
             if(costs + k <= min)
                 futureTau.add(new Tuple(tau, costs+k));
-            if(costs + penalty <= min){
-                min = costs + penalty;
+            if(costs + getPenalty() <= min){
+                min = costs + getPenalty();
                 tauone = tau;
             }
         }
