@@ -39,8 +39,8 @@ public class ListOperation {
         double m = getMean(data);
         double variance = 0;
         for(Double d : data)
-            variance += Math.pow(variance-d,2);
-        return variance/data.size();
+            variance += Math.pow(m-d,2);
+        return Math.pow(variance/data.size(),2);
     }
 
 }

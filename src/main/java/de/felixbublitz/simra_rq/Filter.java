@@ -28,13 +28,14 @@ public class Filter {
             }
             Complex a4 = (outtmp.divide(data.length));
             out.add(a4.getReal());
+            out.add(a4.getReal());
         }
         return out;
     }
 
     private static Complex[] dft(ArrayList<Double>  data){
-        Complex[] out = new Complex[data.size()];
-        for (int i=0; i<data.size();i++){
+        Complex[] out = new Complex[data.size()/2];
+        for (int i=0; i<data.size()/2;i++){
             out[i] = new Complex(0);
             for(int j=0; j<data.size(); j++){
                 out[i]= out[i].add(ComplexUtils.polar2Complex(data.get(j), -2*Math.PI*j*i/data.size()));
@@ -78,7 +79,7 @@ public class Filter {
         double topFrequency = 1.0/(2.0*samplingRate);
         double frequenceStep = topFrequency/(len/2);
         int filterIndex = (int)(freq/frequenceStep);
-        Complex[] filterVector = new Complex[len];
+        Complex[] filterVector = new Complex[len/2];
 
         if(filterIndex >=len){
             throw new java.lang.IllegalArgumentException("Frequency too high");
@@ -86,12 +87,12 @@ public class Filter {
 
         if (type == FilterType.HP) {
             Arrays.fill(filterVector, 0, filterIndex, new Complex(0));
-            Arrays.fill(filterVector, filterIndex, len, new Complex(1));
+            Arrays.fill(filterVector, filterIndex, len/2, new Complex(1));
         }
 
         if (type == FilterType.LP) {
             Arrays.fill(filterVector, 0, filterIndex, new Complex(1));
-            Arrays.fill(filterVector, filterIndex, len, new Complex(0));
+            Arrays.fill(filterVector, filterIndex, len/2, new Complex(0));
         }
 
         return MatrixUtils.createFieldDiagonalMatrix(filterVector);

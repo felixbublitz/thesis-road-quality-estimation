@@ -37,7 +37,7 @@ public class Road {
         this.length = getLengt();
 
         System.out.println("Road " + name + " initiated: " + length + " Meter");
-        MapWindow window = new MapWindow();
+        /*MapWindow window = new MapWindow();
         for(int i=0;i<nodes.size()-1;i++){
 
             window.addSegment( new Segment( new Point(nodes.get(i).getLatitude(), nodes.get(i).getLongitude()), new Point(nodes.get(i+1).getLatitude(), nodes.get(i+1).getLongitude()), Color.RED));
@@ -45,16 +45,21 @@ public class Road {
         }
 
         window.setVisible(true);
-
-        try {
+*/
+       /* try {
             TimeUnit.SECONDS.sleep(2);
             if(name.equals("Lützowufer"))
             TimeUnit.MINUTES.sleep(2);
         } catch (InterruptedException e) {
             e.printStackTrace();
-        }
+        }*/
 
     }
+
+
+    public int getPosition(GPSData gps){
+        return -1;
+    };
 
 
     private int getLengt(){

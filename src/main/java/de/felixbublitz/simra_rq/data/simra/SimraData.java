@@ -3,10 +3,10 @@ package de.felixbublitz.simra_rq.data.simra;
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.Map;
+import java.sql.Timestamp;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
+import java.util.*;
 
 public class SimraData {
     private ArrayList<Long> timeData;
@@ -71,6 +71,11 @@ public class SimraData {
 
     }
 
+
+    public Date getRecordingDate(){
+        return new Date((long)timeData.get(0));
+    }
+
     public SimraData(ArrayList<Long> timeData, ArrayList<AccelerometerData> accelerometerData, ArrayList<GPSData> gpsData){
         this.timeData = timeData;
         this.accelerometerData = accelerometerData;
@@ -102,6 +107,11 @@ public class SimraData {
     public ArrayList<GPSData> getGPSData(){
         return gpsData;
     }
+
+    public GPSData getGPSData(int index){
+        return gpsData.get(index);
+    }
+
 
 
     public ArrayList<Double> getDirectedAccelerometerData(Axis a){

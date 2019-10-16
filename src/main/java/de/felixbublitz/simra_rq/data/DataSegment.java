@@ -16,6 +16,7 @@ public class DataSegment {
         this.variance = ListOperation.getVariance(data.subList(start, end));
     }
 
+    public double getVariance(){return variance;};
     public int getStart(){
         return start;
     }

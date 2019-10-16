@@ -4,6 +4,7 @@ import de.felixbublitz.simra_rq.data.simra.GPSData;
 import org.json.JSONObject;
 
 import java.io.IOException;
+import java.lang.reflect.Array;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.http.HttpClient;
@@ -11,26 +12,96 @@ import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 
 public class Track {
 
+    final int MIN_ROAD_DURATION = 10; //seconds
+
     final String API_REVERSE_GEOCODING = "http://localhost/nominatim/reverse.php?";
     HashMap<String, Road> roads = new HashMap<String, Road>();
     ArrayList<TrackSegment> segments;
+    double samplingRate;
 
 
-    public Track(ArrayList<GPSData> gpsData){
-        for (GPSData gps : gpsData){
-            if(gps != null) {
-                Map<String, String> identifier = getRoadIdentifier(gps);
+    public Track(ArrayList<GPSData> gpsData, double samplingRate){
+        segments = new ArrayList<TrackSegment>();
+        this.samplingRate = samplingRate;
+
+        for (int i =0; i < gpsData.size(); i++){
+            if(gpsData.get(i) != null) {
+                Map<String, String> identifier = getRoadIdentifier(gpsData.get(i));
 
                 if(identifier != null) {
                     Road road = getRoad(identifier.get("road"), identifier.get("district"));
+                    addRoadToTrack(road, i);
                 }
 
             }
+        }
+
+        cleanTrack();
+
+    }
+
+    public ArrayList<TrackSegment> getSegments(){
+        return segments;
+    }
+
+    public TrackSegment getSegment(int x){
+        for(TrackSegment s : segments){
+            if(s.getStart() <= x && s.getEnd() >= x)
+                return s;
+        }
+        return null;
+    }
+
+    private void cleanTrack(){
+        ArrayList<TrackSegment> cleanedList = new ArrayList<TrackSegment>();
+        List<TrackSegment> processedSegments = new ArrayList<TrackSegment>();
+
+        for(int i=0; i<segments.size();i++){
+            if(!processedSegments.contains(segments.get(i))) {
+                for (int j = i + 1; j < segments.size(); j++) {
+                    if (!processedSegments.contains(segments.get(j)) && segments.get(i).getRoad().equals(segments.get(j).getRoad()) && segments.get(j).getStart() - segments.get(i).getEnd() < MIN_ROAD_DURATION/samplingRate) {
+                        segments.set(i, new TrackSegment(segments.get(i).getRoad(), segments.get(i).getStart(), segments.get(j).getEnd()));
+                        processedSegments.add(segments.get(j));
+                    }
+                }
+                processedSegments.add(segments.get(i));
+                if(segments.get(i).getLength() > MIN_ROAD_DURATION/samplingRate) {
+                    cleanedList.add(segments.get(i));
+                }
+            }
+        }
+
+        segments = cleanedList;
+
+    }
+
+    private TrackSegment getSegment(Road r){
+        for(TrackSegment ts : segments){
+            if(ts.getRoad() == r)
+                return ts;
+        }
+        return null;
+    }
+
+    private TrackSegment getLastSegment(){
+        if(segments.size() == 0)
+            return null;
+
+        return segments.get(segments.size()-1);
+    }
+
+    private void addRoadToTrack(Road road, int i){
+        TrackSegment ts = getLastSegment();
+        if(ts != null && ts.getRoad() == road){
+            segments.set(segments.indexOf(ts), new TrackSegment(road, ts.getStart(), i));
+        }else{
+            segments.add(new TrackSegment(road, i,i));
         }
     }
 

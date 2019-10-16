@@ -3,27 +3,33 @@ package de.felixbublitz.simra_rq;
 import de.felixbublitz.simra_rq.data.DataSegment;
 
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
 
-public class AnomolieDetection {
+public class AnomalyDetection {
 
     public static ArrayList<Integer> getPeaks(ArrayList<Double> data, ArrayList<DataSegment> segments, double threshold, int eliminationDistance){
-        double standardDeviation = ListOperation.getStandardDeviation(data);
+        double variance = ListOperation.getVariance(data);
+        double mean = ListOperation.getMean(data);
+
         ArrayList<Integer> peakCandidates = new ArrayList<Integer>();
         ArrayList<Integer> peaks = new ArrayList<Integer>();
 
         for(DataSegment segment : segments){
             for(int i=segment.getStart(); i<segment.getEnd(); i++){
-                if(data.get(i) > threshold*standardDeviation)
+                if(Math.abs(data.get(i) - mean) - threshold*variance > 0)
                     peakCandidates.add(i);
             }
 
             while(peakCandidates.size() != 0){
                 int largest = getLargestPeak(data, peakCandidates);
-                peaks.add(largest);
+                peaks.add(peakCandidates.get(largest));
                 cleanPeakCandidates(peakCandidates, largest, eliminationDistance);
             }
 
         }
+
+        Collections.sort(peaks);
 
         return peaks;
 
@@ -31,9 +37,10 @@ public class AnomolieDetection {
 
     private static void cleanPeakCandidates(ArrayList<Integer> peakCandidates, int largest, int eliminationDistance){
         int i = 0;
+        double lvalue = peakCandidates.get(largest);
 
         while(i < peakCandidates.size()){
-            if(Math.abs(peakCandidates.get(i) - largest) < eliminationDistance){
+            if(Math.abs(peakCandidates.get(i) - lvalue) < eliminationDistance){
                 peakCandidates.remove(i);
             }else{
                 i++;
@@ -45,9 +52,9 @@ public class AnomolieDetection {
     private static int getLargestPeak(ArrayList<Double> data, ArrayList<Integer> peakCandidates){
         double max = 0;
         int index = 0;
-        for(int i=0; i<data.size();i++){
-            if(data.get(i)> max){
-                max = data.get(i);
+        for(int i=0; i<peakCandidates.size();i++){
+            if(data.get(peakCandidates.get(i))> max){
+                max = data.get(peakCandidates.get(i));
                 index = i;
             }
         }

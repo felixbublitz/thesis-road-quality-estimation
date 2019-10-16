@@ -1,5 +1,5 @@
 package de.felixbublitz.simra_rq;
-import de.felixbublitz.simra_rq.data.db.AnomolieData;
+import de.felixbublitz.simra_rq.data.db.AnomalyData;
 import de.felixbublitz.simra_rq.data.db.RoughnessData;
 import de.felixbublitz.simra_rq.data.track.Road;
 import java.util.ArrayList;
@@ -18,9 +18,9 @@ public class Database {
             throw new java.lang.IllegalArgumentException("no list");
 
 
-        if(list.get(0).getClass() == AnomolieData.class){
+        if(list.get(0).getClass() == AnomalyData.class){
             for(Object a : list){
-                insert((AnomolieData) a);
+                insert((AnomalyData) a);
             }
         }
 
@@ -37,7 +37,7 @@ public class Database {
         throw new java.lang.UnsupportedOperationException("Not implemented yet.");
     }
 
-    public ArrayList<AnomolieData> getAnomilieData(Road r){
+    public ArrayList<AnomalyData> getAnomilieData(Road r){
         throw new java.lang.UnsupportedOperationException("Not implemented yet.");
     }
 
@@ -49,7 +49,7 @@ public class Database {
         throw new java.lang.UnsupportedOperationException("Not implemented yet.");
     }
 
-    public boolean insert(AnomolieData ad){
+    public boolean insert(AnomalyData ad){
         throw new java.lang.UnsupportedOperationException("Not implemented yet.");
 
     }
