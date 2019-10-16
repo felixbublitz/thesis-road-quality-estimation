@@ -1,7 +1,6 @@
 package de.felixbublitz.simra_rq.changepoint;
 
-import de.felixbublitz.simra_rq.ListOperation;
-import de.felixbublitz.simra_rq.SegmentDetection;
+import de.felixbublitz.simra_rq.etc.ListOperation;
 
 import java.util.ArrayList;
 import java.util.Collections;

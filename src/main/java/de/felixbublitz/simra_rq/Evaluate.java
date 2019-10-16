@@ -2,11 +2,16 @@ package de.felixbublitz.simra_rq;
 
 
 import de.felixbublitz.simra_rq.changepoint.BinarySegmentation;
-import de.felixbublitz.simra_rq.data.*;
-import de.felixbublitz.simra_rq.data.db.AnomalyData;
-import de.felixbublitz.simra_rq.data.db.RoughnessData;
-import de.felixbublitz.simra_rq.data.simra.SimraData;
-import de.felixbublitz.simra_rq.data.track.Track;
+import de.felixbublitz.simra_rq.database.AnomalyData;
+import de.felixbublitz.simra_rq.database.RoughnessData;
+import de.felixbublitz.simra_rq.quality.AnomalyDetection;
+import de.felixbublitz.simra_rq.quality.DataSegment;
+import de.felixbublitz.simra_rq.quality.Filter;
+import de.felixbublitz.simra_rq.quality.SegmentDetection;
+import de.felixbublitz.simra_rq.simra.SimraData;
+import de.felixbublitz.simra_rq.database.Database;
+import de.felixbublitz.simra_rq.track.RoadMapper;
+import de.felixbublitz.simra_rq.track.Track;
 import org.knowm.xchart.QuickChart;
 import org.knowm.xchart.SwingWrapper;
 import org.knowm.xchart.XYChart;

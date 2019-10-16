@@ -1,8 +1,9 @@
 package de.felixbublitz.simra_rq;
 
-import de.felixbublitz.simra_rq.data.db.AnomalyData;
-import de.felixbublitz.simra_rq.data.db.RoughnessData;
-import de.felixbublitz.simra_rq.data.track.Road;
+import de.felixbublitz.simra_rq.database.AnomalyData;
+import de.felixbublitz.simra_rq.database.RoughnessData;
+import de.felixbublitz.simra_rq.database.Database;
+import de.felixbublitz.simra_rq.track.Road;
 
 import java.util.ArrayList;
 
