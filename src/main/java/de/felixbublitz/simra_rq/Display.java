@@ -10,7 +10,7 @@ import java.util.ArrayList;
 public class Display {
 
     public static void main(String[] args){
-        Database db = new Database();
+        Database db = new Database("database.db");
 
         ArrayList<Road> roads = db.getRoads();
 

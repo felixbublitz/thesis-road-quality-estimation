@@ -1,5 +1,6 @@
 package de.felixbublitz.simra_rq.track;
 
+import de.felixbublitz.simra_rq.database.Database;
 import de.felixbublitz.simra_rq.simra.GPSData;
 import org.json.JSONArray;
 
@@ -38,13 +39,17 @@ public class Road {
         this.nodes = nodes;
     }
 
-    public Road(String name, String district){
+    public Road(Database db, String name, String district){
         this.name = name;
         this.district = district;
-        this.nodes = getNodes();
+        this.nodes = resolveNodes();
         this.length = getLengt();
+        this.id = db.addRoad(this);
 
         System.out.println("Road " + name + " initiated: " + length + " Meter");
+
+
+
         /*MapWindow window = new MapWindow();
         for(int i=0;i<nodes.size()-1;i++){
 
@@ -131,7 +136,11 @@ public class Road {
         return (int)Math.round(len*0.1)*10;
     };
 
-    private ArrayList<GPSData> getNodes(){
+    public ArrayList<GPSData> getNodes(){
+        return nodes;
+    }
+
+    private ArrayList<GPSData> resolveNodes(){
         return unwrapNodeGroups(getNodesFromNominatim());
     }
 

@@ -111,7 +111,7 @@ public class DBQuery {
     }
 
     private String getInsertRequest(){
-        return "INSERT INTO  "+ table + " (" +  String.join(", ", cells) + " )" + " VALUES (" + String.join(" and ", cellValues) +" )";
+        return "INSERT INTO  "+ table + " (" +  String.join(", ", cells) + " )" + " VALUES (" + String.join(", ", cellValues) +" )";
     }
 
     private String getDeleteRequest(){

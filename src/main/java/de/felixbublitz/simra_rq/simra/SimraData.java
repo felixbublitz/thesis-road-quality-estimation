@@ -3,6 +3,7 @@ package de.felixbublitz.simra_rq.simra;
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
+import java.text.SimpleDateFormat;
 import java.util.*;
 
 public class SimraData {
@@ -73,6 +74,12 @@ public class SimraData {
         return new Date((long)timeData.get(0));
     }
 
+    public String getRecordingDate(String format){
+        SimpleDateFormat simpleDateFormat = new SimpleDateFormat(format);
+
+        return simpleDateFormat.format(new Date((long)timeData.get(0)));
+    }
+
     public SimraData(ArrayList<Long> timeData, ArrayList<AccelerometerData> accelerometerData, ArrayList<GPSData> gpsData){
         this.timeData = timeData;
         this.accelerometerData = accelerometerData;
@@ -103,6 +110,33 @@ public class SimraData {
 
     public ArrayList<GPSData> getGPSData(){
         return gpsData;
+    }
+
+    public GPSData getGPSData(int index, boolean interpolate){
+        GPSData curr = gpsData.get(index);
+        if(curr == null){
+            GPSData last = null;
+            GPSData next = null;
+            int lastI = 0;
+            int nextI = 0;
+            int i = index;
+            while(last == null){
+                last = gpsData.get(i--);
+                lastI = i;
+            }
+            i=index;
+            while(next == null){
+                next = gpsData.get(i++);
+                nextI = i;
+            }
+            double latDist =  next.getLatitude() - last.getLatitude();
+            double lonDist = next.getLongitude() - last.getLongitude();
+            double progress = (index-lastI)*1.0/ (nextI-lastI)*1.0;
+
+            return new GPSData(last.getLatitude() + progress*latDist, last.getLongitude() + progress * lonDist);
+        }else{
+            return curr;
+        }
     }
 
     public GPSData getGPSData(int index){

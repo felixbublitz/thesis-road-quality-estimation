@@ -67,16 +67,16 @@ public class Database {
         d.cell("road_id",rd.getRoad().getId());
         d.cell("start", rd.getStart());
         d.cell("end", rd.getEnd());
-        d.cell("recorded", rd.getRecorded());
+        d.cell("recorded", rd.getRecordingDate("yyyy-MM-dd"));
         d.cell("variance", rd.getVariance());
         d.query();
     }
 
     public void insert(AnomalyData ad){
-        DBQuery d = new DBQuery(connection).insert("Roughness_Data");
+        DBQuery d = new DBQuery(connection).insert("Anomaly_Data");
         d.cell("road_id",ad.getRoad().getId());
         d.cell("position", ad.getPosition());
-        d.cell("recorded", ad.getRecorded());
+        d.cell("recorded", ad.getRecordingDate("yyyy-MM-dd"));
         d.query();
     }
 
@@ -166,10 +166,19 @@ public class Database {
         return road;
     }
 
-    public void addRoad(Road r){
+    public int addRoad(Road r){
         DBQuery d = new DBQuery(connection).insert("Roads").cell("name", r.getName()).cell("district", r.getDistrict()).cell("length", String.valueOf(r.getLength()));
-        int id = d.query();
+        int roadID = d.query();
+
+        for(GPSData node : r.getNodes()){
+            DBQuery dn = new DBQuery(connection).insert("Road_Nodes").cell("road_id", roadID).cell("latitude", node.getLatitude()).cell("longitude", node.getLongitude());
+            dn.query();
+        }
+
+        return roadID;
     }
+
+
 
     public ArrayList<Road> getRoads(){
         DBQuery d =  new DBQuery(connection).select("roads").cells("id", "name", "district", "length");

@@ -2,6 +2,7 @@ package de.felixbublitz.simra_rq.database;
 
 import de.felixbublitz.simra_rq.track.Road;
 
+import java.text.SimpleDateFormat;
 import java.util.Date;
 
 public class RoughnessData  {
@@ -13,8 +14,13 @@ public class RoughnessData  {
         return road;
     }
 
-    public Date getRecorded() {
+    public Date getRecordingDate() {
         return recorded;
+    }
+
+    public String getRecordingDate(String format){
+        SimpleDateFormat simpleDateFormat = new SimpleDateFormat(format);
+        return simpleDateFormat.format(recorded);
     }
 
     public double getVariance() {

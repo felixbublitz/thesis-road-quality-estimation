@@ -110,21 +110,23 @@ public class Track {
 
 
     private Road getRoad(String name, String district){
+
+        Road r;
+
         //intern
-        if(roads.containsKey(name+"#"+district)){
-            return roads.get(name+"#"+district);
-        }
+        r = roads.get(name+"#"+district);
 
         //db
-        Road r = db.getRoad(name, district);
-        if(r != null)
-            return r;
+        if(r == null)
+            r = db.getRoad(name, district);
 
         //create new
-        r = new Road(name, district);
-        roads.put(name+"#"+district, r);
+        if(r == null)
+            r = new Road(db, name, district);
 
+        roads.put(name + "#" + district, r);
         return r;
+
     }
 
     private Map<String, String> getRoadIdentifier(GPSData gps) {

@@ -19,7 +19,7 @@ public class RoadMapper {
             for(int i=dataSegments.indexOf(startSegment); i<dataSegments.indexOf(endSegment); i++){
                 int start = i == dataSegments.indexOf(startSegment) ? ts.getStart() : dataSegments.get(i).getStart();
                 int end = i == dataSegments.indexOf(endSegment) ? ts.getEnd() : dataSegments.get(i).getEnd();
-                out.add(new RoughnessData(ts.getRoad(), simraData.getRecordingDate(), ts.getRoad().getPosition(simraData.getGPSData(start)), ts.getRoad().getPosition(simraData.getGPSData(end)), dataSegments.get(i).getVariance()));
+                out.add(new RoughnessData(ts.getRoad(), simraData.getRecordingDate(), ts.getRoad().getPosition(simraData.getGPSData(start,true)), ts.getRoad().getPosition(simraData.getGPSData(end, true)), dataSegments.get(i).getVariance()));
             }
         }
 
@@ -30,7 +30,7 @@ public class RoadMapper {
         ArrayList<AnomalyData> out = new ArrayList<AnomalyData>();
         for(Integer anomaly : anomalyData){
             if(track.getSegment(anomaly) != null)
-                out.add(new AnomalyData(track.getSegment(anomaly).getRoad(), simraData.getRecordingDate(), track.getSegment(anomaly).getRoad().getPosition(simraData.getGPSData(anomaly))));
+                out.add(new AnomalyData(track.getSegment(anomaly).getRoad(), simraData.getRecordingDate(), track.getSegment(anomaly).getRoad().getPosition(simraData.getGPSData(anomaly, true))));
         }
 
         return out;
