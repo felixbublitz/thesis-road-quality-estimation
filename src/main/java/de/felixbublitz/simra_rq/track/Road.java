@@ -118,8 +118,20 @@ public class Road {
             }
             tempLength += p1.getDistanceTo(p2);
         }
-        if(len == -1)
-            return -1;
+        if(len == -1) {
+            len = 0;
+            shortest_dist = Integer.MAX_VALUE;
+            tempLength = 0;
+            for (int i = 0; i < nodes.size(); i++) {
+                if (px.getDistanceTo(nodes.get(i)) < shortest_dist) {
+                    shortest_dist = px.getDistanceTo(nodes.get(i));
+                    len = tempLength + nodes.get(i).getDistanceTo(nodes.get(i - 1));
+                }else{
+                    if (i != 0)
+                    tempLength += nodes.get(i).getDistanceTo(nodes.get(i - 1));
+                }
+            }
+        }
 
         return (int)Math.round((int)len*0.1)*10;
 
@@ -233,7 +245,7 @@ public class Road {
     }
 
     private float getAngle(GPSData g1, GPSData g2,  GPSData g3){
-        float degree = (float)Math.toDegrees(Math.atan2(g3.getLongitude() - g2.getLongitude(), g3.getLatitude() - g2.getLatitude()) - Math.atan2(g1.getLongitude() - g2.getLongitude(), g1.getLatitude() - g2.getLatitude()));
+        float degree = Math.abs((float)Math.toDegrees(Math.atan2(g3.getLongitude() - g2.getLongitude(), g3.getLatitude() - g2.getLatitude()) - Math.atan2(g1.getLongitude() - g2.getLongitude(), g1.getLatitude() - g2.getLatitude())));
 
         if(name.equals("Lützowufer"))
             System.out.println(degree);

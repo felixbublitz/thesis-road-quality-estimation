@@ -9,6 +9,8 @@ import java.util.ArrayList;
 
 public class RoadMapper {
 
+    final static int MIN_DIST = 20;
+
     public static ArrayList<RoughnessData> mapSegments(SimraData simraData, ArrayList<DataSegment> dataSegments, Track track){
         ArrayList<RoughnessData> out = new ArrayList<RoughnessData>();
 
@@ -19,7 +21,11 @@ public class RoadMapper {
             for(int i=dataSegments.indexOf(startSegment); i<dataSegments.indexOf(endSegment); i++){
                 int start = i == dataSegments.indexOf(startSegment) ? ts.getStart() : dataSegments.get(i).getStart();
                 int end = i == dataSegments.indexOf(endSegment) ? ts.getEnd() : dataSegments.get(i).getEnd();
-                out.add(new RoughnessData(ts.getRoad(), simraData.getRecordingDate(), ts.getRoad().getPosition(simraData.getGPSData(start,true)), ts.getRoad().getPosition(simraData.getGPSData(end, true)), dataSegments.get(i).getVariance()));
+                int posStart = ts.getRoad().getPosition(simraData.getGPSData(start,true));
+                int posEnd = ts.getRoad().getPosition(simraData.getGPSData(end, true));
+
+                if(posEnd-posStart > MIN_DIST)
+                    out.add(new RoughnessData(ts.getRoad(), simraData.getRecordingDate(), posStart , posEnd, dataSegments.get(i).getVariance()));
             }
         }
 

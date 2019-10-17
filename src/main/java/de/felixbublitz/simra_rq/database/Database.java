@@ -106,7 +106,7 @@ public class Database {
         ArrayList<Object> list = (ArrayList<Object>) data;
 
         if(list.size() == 0)
-            throw new java.lang.IllegalArgumentException("no list");
+            return true;
 
 
         if(list.get(0).getClass() == AnomalyData.class){
