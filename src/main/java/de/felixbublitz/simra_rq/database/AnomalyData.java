@@ -10,7 +10,17 @@ public class AnomalyData {
     private Date recorded;
     private int position;
 
+    public Road getRoad() {
+        return road;
+    }
 
+    public Date getRecorded() {
+        return recorded;
+    }
+
+    public int getPosition() {
+        return position;
+    }
 
     public AnomalyData(Road road, Date recorded, int position){
         this.road = road;

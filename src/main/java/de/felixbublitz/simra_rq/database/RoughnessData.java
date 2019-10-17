@@ -8,6 +8,27 @@ public class RoughnessData  {
     private Road road;
     private Date recorded;
     private double variance;
+
+    public Road getRoad() {
+        return road;
+    }
+
+    public Date getRecorded() {
+        return recorded;
+    }
+
+    public double getVariance() {
+        return variance;
+    }
+
+    public int getStart() {
+        return start;
+    }
+
+    public int getEnd() {
+        return end;
+    }
+
     private int start;
     private int end;
 
@@ -20,4 +41,6 @@ public class RoughnessData  {
         this.end = end;
         this.variance = variance;
     }
+
+
 }

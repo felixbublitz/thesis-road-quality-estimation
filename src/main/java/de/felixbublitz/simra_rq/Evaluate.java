@@ -27,25 +27,19 @@ public class Evaluate {
     public static void main(String[] args) {
         //load data
         SimraData dataset = new SimraData("/home/felix/Documents/SimRa/rides/ride17.csv");
-        Database db = new Database();
+        Database db = new Database("database.db");
 
         //detect segments
         ArrayList<Double> magnitudes = dataset.getMagnitudes();
         ArrayList<Double> filteredMagnitudes = Filter.applyHighpass(magnitudes, dataset.getSamplingRate(), 3);
-
-        debug(filteredMagnitudes);
-
-
         ArrayList<DataSegment> dataSegments = SegmentDetection.getSegments(filteredMagnitudes, new BinarySegmentation(10));
 
         //detect anomalies
-
         ArrayList<Integer> peaks = AnomalyDetection.getPeaks(filteredMagnitudes, dataSegments, 25, (int)(5/dataset.getSamplingRate()));
         //ArrayList<Integer> evasions = anomalyDetection.getEvasions(dataset.getDirectedAccelerometerData(SimraData.Axis.Y));
 
-
         //determine track
-        Track track = new Track(dataset.getGPSData(), dataset.getSamplingRate());
+        Track track = new Track(dataset.getGPSData(), dataset.getSamplingRate(), db);
 
         //map data to track
         ArrayList<RoughnessData> roughnessData = RoadMapper.mapSegments(dataset, dataSegments, track);

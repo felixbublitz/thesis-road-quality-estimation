@@ -18,13 +18,25 @@ public class Road {
     private String name;
     private String district;
     private int length;
+
+    public int getId() {
+        return id;
+    }
+
     private ArrayList<GPSData> nodes;
 
-    final int MAX_ROAD_ANGLE =90;
+    private final int MAX_ROAD_ANGLE =90;
 
     private final String API_SEARCH = "http://localhost/nominatim/search?";
 
 
+    public Road(int id, String name, String district, int length, ArrayList<GPSData> nodes) {
+        this.id = id;
+        this.name = name;
+        this.district = district;
+        this.length = length;
+        this.nodes = nodes;
+    }
 
     public Road(String name, String district){
         this.name = name;
@@ -52,9 +64,61 @@ public class Road {
 
     }
 
+    public int getLength(){
+        return length;
+    }
 
-    public int getPosition(GPSData gps){
-        return -1;
+    public String getName(){
+        return name;
+    }
+
+    public String getDistrict(){
+        return district;
+    }
+
+    public int getPosition(GPSData px){
+        double shortest_dist = Integer.MAX_VALUE;
+        double len = -1;
+        int max_dist_from_track = 50; //meter
+        double tempLength = 0;
+
+
+        for(int i=0; i<nodes.size()-1;i++){
+            GPSData p1 = nodes.get(i);
+            GPSData p2 = nodes.get(i+1);
+
+            double xDist = p1.getLatitude()-p2.getLatitude();
+            double yDist = p1.getLongitude()-p2.getLongitude();
+
+            if(xDist == 0)
+                continue;
+
+            double m1 = yDist/xDist;
+            double b1 = -((m1*p1.getLatitude())-p1.getLongitude());
+
+            if (m1 == 0)
+                continue;
+
+            double m2 = -1/m1;
+            double b2 = -(m2*px.getLatitude()-px.getLongitude());
+            double ix = (b1-b2)/(m2-m1);
+            double iy = m1*ix+b1;
+            GPSData intersect = new GPSData(ix, iy);
+
+            double dist = Math.sqrt(Math.pow(px.getLatitude()-intersect.getLatitude(),2) + Math.pow(px.getLongitude()-intersect.getLongitude(),2));
+
+            if (dist < shortest_dist && intersect.getLatitude() <= Math.max(p1.getLatitude(), p2.getLatitude()) && intersect.getLatitude() >= Math.min(p1.getLatitude(), p2.getLatitude()) && intersect.getDistanceTo(px) <= max_dist_from_track){
+                shortest_dist = dist;
+                len = tempLength + p1.getDistanceTo(intersect);
+            }
+            tempLength += p1.getDistanceTo(p2);
+        }
+        if(len == -1)
+            return -1;
+
+        return (int)Math.round((int)len*0.1)*10;
+
+
     };
 
 

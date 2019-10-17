@@ -1,5 +1,6 @@
 package de.felixbublitz.simra_rq.track;
 
+import de.felixbublitz.simra_rq.database.Database;
 import de.felixbublitz.simra_rq.simra.GPSData;
 import org.json.JSONObject;
 
@@ -23,11 +24,13 @@ public class Track {
     HashMap<String, Road> roads = new HashMap<String, Road>();
     ArrayList<TrackSegment> segments;
     double samplingRate;
+    private Database db;
 
 
-    public Track(ArrayList<GPSData> gpsData, double samplingRate){
+    public Track(ArrayList<GPSData> gpsData, double samplingRate, Database db){
         segments = new ArrayList<TrackSegment>();
         this.samplingRate = samplingRate;
+        this.db = db;
 
         for (int i =0; i < gpsData.size(); i++){
             if(gpsData.get(i) != null) {
@@ -107,13 +110,18 @@ public class Track {
 
 
     private Road getRoad(String name, String district){
+        //intern
         if(roads.containsKey(name+"#"+district)){
             return roads.get(name+"#"+district);
         }
 
         //db
+        Road r = db.getRoad(name, district);
+        if(r != null)
+            return r;
 
-        Road r = new Road(name, district);
+        //create new
+        r = new Road(name, district);
         roads.put(name+"#"+district, r);
 
         return r;

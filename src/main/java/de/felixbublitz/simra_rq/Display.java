@@ -16,7 +16,7 @@ public class Display {
 
         for(Road road:roads) {
             ArrayList<RoughnessData> rd = db.getRoughnessData(road);
-            ArrayList<AnomalyData> ad = db.getAnomilieData(road);
+            ArrayList<AnomalyData> ad = db.getAnomalyData(road);
         }
 
         //display
