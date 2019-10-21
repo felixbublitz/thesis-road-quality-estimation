@@ -8,6 +8,7 @@ import java.util.Collections;
 public class AnomalyDetection {
 
     public static ArrayList<Integer> getPeaks(ArrayList<Double> data, ArrayList<DataSegment> segments, double threshold, int eliminationDistance){
+        long startTime = System.currentTimeMillis();
         double variance = ListOperation.getVariance(data);
         double mean = ListOperation.getMean(data);
 
@@ -30,6 +31,7 @@ public class AnomalyDetection {
 
         Collections.sort(peaks);
 
+        System.out.println("AD Runtime: " + (System.currentTimeMillis() - startTime) + "ms");
         return peaks;
 
     }

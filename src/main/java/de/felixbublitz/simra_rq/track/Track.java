@@ -2,6 +2,7 @@ package de.felixbublitz.simra_rq.track;
 
 import de.felixbublitz.simra_rq.database.Database;
 import de.felixbublitz.simra_rq.simra.GPSData;
+import de.felixbublitz.simra_rq.simra.SimraData;
 import org.json.JSONObject;
 
 import java.io.IOException;
@@ -18,19 +19,23 @@ import java.util.Map;
 
 public class Track {
 
-    final int MIN_ROAD_DURATION = 10; //seconds
+    public final static int MIN_SEGMENT_DISTANCE = 20; //meter
 
     final String API_REVERSE_GEOCODING = "http://localhost/nominatim/reverse.php?";
     HashMap<String, Road> roads = new HashMap<String, Road>();
     ArrayList<TrackSegment> segments;
     double samplingRate;
     private Database db;
+    private SimraData sd;
 
 
-    public Track(ArrayList<GPSData> gpsData, double samplingRate, Database db){
+    public Track(SimraData sd, Database db){
+        long startTime = System.currentTimeMillis();
         segments = new ArrayList<TrackSegment>();
-        this.samplingRate = samplingRate;
+        this.samplingRate = sd.getSamplingRate();
         this.db = db;
+        this.sd = sd;
+        ArrayList<GPSData> gpsData = sd.getGPSData();
 
         for (int i =0; i < gpsData.size(); i++){
             if(gpsData.get(i) != null) {
@@ -45,6 +50,7 @@ public class Track {
         }
 
         cleanTrack();
+        System.out.println("Track Gen Runtime: " + (System.currentTimeMillis() - startTime) + "ms");
 
     }
 
@@ -61,25 +67,42 @@ public class Track {
     }
 
     private void cleanTrack(){
-        ArrayList<TrackSegment> cleanedList = new ArrayList<TrackSegment>();
+
         List<TrackSegment> processedSegments = new ArrayList<TrackSegment>();
 
+        HashMap<Road, Integer> recorededLen = new HashMap<Road, Integer>();
+        ArrayList<TrackSegment> out = new ArrayList<TrackSegment>();
+
         for(int i=0; i<segments.size();i++){
-            if(!processedSegments.contains(segments.get(i))) {
-                for (int j = i + 1; j < segments.size(); j++) {
-                    if (!processedSegments.contains(segments.get(j)) && segments.get(i).getRoad().equals(segments.get(j).getRoad()) && segments.get(j).getStart() - segments.get(i).getEnd() < MIN_ROAD_DURATION/samplingRate) {
-                        segments.set(i, new TrackSegment(segments.get(i).getRoad(), segments.get(i).getStart(), segments.get(j).getEnd()));
-                        processedSegments.add(segments.get(j));
-                    }
-                }
-                processedSegments.add(segments.get(i));
-                if(segments.get(i).getLength() > MIN_ROAD_DURATION/samplingRate) {
-                    cleanedList.add(segments.get(i));
-                }
+            Road r = segments.get(i).getRoad();
+            if(recorededLen.containsKey(r))
+                recorededLen.replace(r, recorededLen.get(r) + segments.get(i).getLength());
+            recorededLen.put(r, segments.get(i).getLength());
+        }
+
+        ArrayList<TrackSegment> cleanedList = new ArrayList<TrackSegment>();
+
+        for(int i=0; i<segments.size();i++){
+            Road r = segments.get(i).getRoad();
+            if(recorededLen.get(r) >= MIN_SEGMENT_DISTANCE)
+                cleanedList.add(segments.get(i));
+        }
+
+        int i=0;
+
+        while(i<cleanedList.size()-1){
+            TrackSegment s1 = cleanedList.get(i);
+            TrackSegment s2 = cleanedList.get(i+1);
+            if(s1.getRoad() == s2.getRoad()){
+                cleanedList.set(i+1, new TrackSegment(s1.getRoad(),sd, s1.getStart(), s2.getEnd()));
+                i++;
+            }else{
+                out.add(s1);
+                i++;
             }
         }
 
-        segments = cleanedList;
+        segments = out;
 
     }
 
@@ -101,9 +124,9 @@ public class Track {
     private void addRoadToTrack(Road road, int i){
         TrackSegment ts = getLastSegment();
         if(ts != null && ts.getRoad() == road){
-            segments.set(segments.indexOf(ts), new TrackSegment(road, ts.getStart(), i));
+            segments.set(segments.indexOf(ts), new TrackSegment(road,sd, ts.getStart(), i));
         }else{
-            segments.add(new TrackSegment(road, i,i));
+            segments.add(new TrackSegment(road,sd, i,i));
         }
     }
 
@@ -139,7 +162,7 @@ public class Track {
 
                 String[] parameters = {"lat=" + String.valueOf(gps.getLatitude()),
                         "lon=" + String.valueOf(gps.getLongitude()),
-                        "zoom=16",
+                        "zoom=17",
                         "format=jsonv2"};
 
                 response = client.send(
@@ -166,6 +189,10 @@ public class Track {
 
 
                 if(!(json.has("address") && json.has("osm_type") && json.getString("osm_type").equals("way") && json.getJSONObject("address").has("road"))){
+                    return null;
+                }
+
+                if(json.has("type") && json.getString("type").equals("motorway")){
                     return null;
                 }
 

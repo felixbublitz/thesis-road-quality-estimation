@@ -1,6 +1,6 @@
 package de.felixbublitz.simra_rq;
 
-import de.felixbublitz.simra_rq.changepoint.BinarySegmentation;
+import de.felixbublitz.simra_rq.changepoint.*;
 import de.felixbublitz.simra_rq.database.AnomalyData;
 import de.felixbublitz.simra_rq.database.RoughnessData;
 import de.felixbublitz.simra_rq.quality.AnomalyDetection;
@@ -10,49 +10,55 @@ import de.felixbublitz.simra_rq.quality.SegmentDetection;
 import de.felixbublitz.simra_rq.simra.GPSData;
 import de.felixbublitz.simra_rq.simra.SimraData;
 import de.felixbublitz.simra_rq.database.Database;
-import de.felixbublitz.simra_rq.track.Road;
 import de.felixbublitz.simra_rq.track.RoadMapper;
 import de.felixbublitz.simra_rq.track.Track;
-import org.knowm.xchart.QuickChart;
-import org.knowm.xchart.SwingWrapper;
-import org.knowm.xchart.XYChart;
+import de.felixbublitz.simra_rq.track.TrackSegment;
+import org.jxmapviewer.JXMapViewer;
+import org.jxmapviewer.OSMTileFactoryInfo;
+import org.jxmapviewer.painter.CompoundPainter;
+import org.jxmapviewer.viewer.*;
+import org.knowm.xchart.*;
+import org.knowm.xchart.internal.chartpart.Chart;
+import org.knowm.xchart.style.Styler;
+
+import javax.swing.*;
+import java.awt.*;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.Set;
 import java.util.stream.Stream;
 
 
 public class Evaluate {
+    private static Database db;
 
-    public static void main(String[] args) {
+    private static void evaluateFile(String file){
         //load data
-        SimraData dataset = new SimraData("/home/felix/Documents/SimRa/rides/ride17.csv");
-        Database db = new Database("database.db");
-
-/*
-        Road test = new Road(db, "Ritterstraße", "Kreuzberg");
-
-
-        GPSData anfang = new GPSData(52.487140, 13.427920);
-        GPSData ende = new GPSData(52.493402, 13.428149);
-
-        test.getPosition(anfang);
-        test.getPosition(ende);
-
-
-*/
+        SimraData dataset = new SimraData(file);
 
 
 
         //detect segments
         ArrayList<Double> magnitudes = dataset.getMagnitudes();
         ArrayList<Double> filteredMagnitudes = Filter.applyHighpass(magnitudes, dataset.getSamplingRate(), 3);
-        ArrayList<DataSegment> dataSegments = SegmentDetection.getSegments(filteredMagnitudes, new BinarySegmentation(14));
+
+        ArrayList<DataSegment> dataSegments = SegmentDetection.getSegments(filteredMagnitudes, new BinarySegmentation(1));
+
+        DebugHelper.showSegments(filteredMagnitudes, dataSegments);
 
         //detect anomalies
         ArrayList<Integer> peaks = AnomalyDetection.getPeaks(filteredMagnitudes, dataSegments, 25, (int)(5/dataset.getSamplingRate()));
         //ArrayList<Integer> evasions = anomalyDetection.getEvasions(dataset.getDirectedAccelerometerData(SimraData.Axis.Y));
 
         //determine track
-        Track track = new Track(dataset.getGPSData(), dataset.getSamplingRate(), db);
+        Track track = new Track(dataset, db);
+
+        for(TrackSegment t : track.getSegments()){
+            DebugHelper.showOnMap(t.getRoad(), dataset.getGPSData(t.getStart(), true), dataset.getGPSData(t.getEnd(), true), t.getRoad().getGPSPoint(t.getStartPosition()), t.getRoad().getGPSPoint(t.getEndPosition()));
+        }
+
+        DebugHelper.showOnMap(track, dataset);
 
         //map data to track
         ArrayList<RoughnessData> roughnessData = RoadMapper.mapSegments(dataset, dataSegments, track);
@@ -65,16 +71,21 @@ public class Evaluate {
         //db.insert(anomalyData2);
     }
 
-    private static void debug(ArrayList<Double> filteredMagnitudes){
-        double[] xData = new double[filteredMagnitudes.size()];
-        for( int i = 0; i < filteredMagnitudes.size(); i++ )
-            xData[i] = i+1;
+    public static void main(String[] args) {
+        db = new Database("database.db");
 
-        Double[] yData = filteredMagnitudes.toArray(new Double[filteredMagnitudes.size()]);
-
-        XYChart chart = QuickChart.getChart("Sample Chart", "X", "Y", "y(x)", xData, Stream.of(yData).mapToDouble(Double::doubleValue).toArray());
-        new SwingWrapper(chart).displayChart();
+        evaluateFile("/home/felix/Documents/SimRa/rides/ride" + 14 + ".csv");
+        /*
+        for(int i=2; i< 200; i++){
+            try {
+                evaluateFile("/home/felix/Documents/SimRa/rides/ride" + i + ".csv");
+            }catch(IllegalArgumentException e){
+                System.out.println("skip");
+            }
+        }*/
     }
+
+
 
 
 }

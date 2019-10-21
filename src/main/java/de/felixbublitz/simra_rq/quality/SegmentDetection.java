@@ -16,6 +16,11 @@ public class SegmentDetection {
         ArrayList<Integer> changePoints = algo.getChangepoints(data);
         ArrayList<DataSegment> segments = new ArrayList<DataSegment>();
 
+        if(changePoints.size() == 0){
+            segments.add(new DataSegment(0, data.size(), data));
+            return segments;
+        }
+
         segments.add(new DataSegment(0, changePoints.get(0), data));
         for(int i=0; i<changePoints.size()-1; i++){
             segments.add(new DataSegment(changePoints.get(i), changePoints.get(i+1), data));

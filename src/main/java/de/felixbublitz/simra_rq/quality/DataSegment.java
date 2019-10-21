@@ -12,10 +12,13 @@ public class DataSegment {
     public DataSegment(int start, int end, ArrayList<Double> data){
         this.start = start;
         this.end = end;
-        this.variance = ListOperation.getVariance(data.subList(start, end));
+        this.variance = ListOperation.getStandardDeviation(data.subList(start, end));
     }
 
     public double getVariance(){return variance;};
+    public double getStandardDeviration(){return Math.sqrt(variance);};
+
+
     public int getStart(){
         return start;
     }

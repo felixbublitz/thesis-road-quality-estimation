@@ -12,12 +12,50 @@ import java.util.Arrays;
 
 public class Filter {
 
+
     enum FilterType {HP, LP};
+    private static final int THREAD_COUNT = 4;
 
 
     private static ArrayList<Double> idft(Complex[] data){
-        ArrayList<Double> out = new ArrayList<Double>();
-        for (int i=0; i<data.length;i++){
+        ArrayList<Double> out= new ArrayList<Double>();
+        ArrayList<Thread> threads = new ArrayList<>();
+        ArrayList<DFTRunnable> runnables = new ArrayList<DFTRunnable>();
+
+        int partLength = data.length/THREAD_COUNT;
+        for(int i =0; i<THREAD_COUNT; i++){
+            int s = i * partLength;
+            int t = Math.min((i+1)*partLength, data.length);
+            if(i==THREAD_COUNT-1){
+                t=data.length;
+            }
+
+
+            DFTRunnable dftRunnable = new DFTRunnable(data, s, t);
+            Thread thread = new Thread(dftRunnable);
+            threads.add(thread);
+            runnables.add(dftRunnable);
+            thread.start();
+        }
+
+        for(Thread t : threads){
+            try {
+                t.join();
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+        }
+
+        for(DFTRunnable r : runnables){
+            out.addAll( r.out);
+        }
+
+        return out;
+    }
+
+
+    protected static void idft(Complex[] data, ArrayList<Double> out, int s, int t){
+        for (int i=s; i<t;i++){
             Complex outtmp = new Complex(0);
 
             for(int j=0; j<data.length; j++){
@@ -25,21 +63,59 @@ public class Filter {
                 outtmp= outtmp.add(new Complex(Math.E).pow(exponent).multiply(data[j]));
             }
             Complex a4 = (outtmp.divide(data.length));
-            out.add(a4.getReal());
-            out.add(a4.getReal());
+            out.add((2*i)-2*s, a4.getReal());
+            out.add((2*i+1)-2*s,  a4.getReal());
         }
-        return out;
+
+    }
+
+    protected static void dft(ArrayList<Double>  data, ArrayList<Complex> out, int s, int t){
+        for (int i=s; i<t;i++){
+            out.add(i-s, new Complex(0));
+            for(int j=0; j<data.size(); j++){
+                out.set(i-s, out.get(i-s).add(ComplexUtils.polar2Complex(data.get(j), -2*Math.PI*j*i/data.size())));
+            }
+        }
     }
 
     private static Complex[] dft(ArrayList<Double>  data){
-        Complex[] out = new Complex[data.size()/2];
-        for (int i=0; i<data.size()/2;i++){
-            out[i] = new Complex(0);
-            for(int j=0; j<data.size(); j++){
-                out[i]= out[i].add(ComplexUtils.polar2Complex(data.get(j), -2*Math.PI*j*i/data.size()));
+        int len = data.size()/2;
+        ArrayList<Complex> out = new  ArrayList<Complex>();
+        ArrayList<Thread> threads = new ArrayList<>();
+        ArrayList<DFTRunnable> runnables = new ArrayList<DFTRunnable>();
+
+
+        int partLength = len/THREAD_COUNT;
+        for(int i =0; i<THREAD_COUNT; i++){
+
+            int s = i * partLength;
+            int t = Math.min((i+1)*partLength, len);
+            if(i==THREAD_COUNT-1){
+                t=len;
+            }
+            DFTRunnable dftRunnable = new DFTRunnable(data, s, t);
+            Thread thread = new Thread(dftRunnable);
+            threads.add(thread);
+            runnables.add(dftRunnable);
+
+            thread.start();
+        }
+
+        for(Thread t : threads){
+            try {
+                t.join();
+            } catch (InterruptedException e) {
+                e.printStackTrace();
             }
         }
-        return out;
+
+        for(DFTRunnable r : runnables){
+            out.addAll( r.out);
+        }
+
+
+
+        return (Complex[])( out.toArray(new Complex[out.size()]));
     }
 
     public static ArrayList<Double> applyBandpass(ArrayList<Double> data, float samplingRate, double minFrequency, double maxFrequency){
@@ -55,6 +131,8 @@ public class Filter {
     }
 
     public static ArrayList<Double> applyHighpass(ArrayList<Double> data, float samplingRate, double minFrequency){
+        long startTime = System.currentTimeMillis();
+
         Complex[] y = dft(data);
         FieldMatrix<Complex> dataVector = (new Array2DRowFieldMatrix<Complex>(y)).transpose();
         FieldMatrix<Complex> filter = generateFilterMatrix(data.size(), samplingRate, minFrequency, FilterType.HP);
@@ -63,8 +141,9 @@ public class Filter {
 
         //debug
         //plotData(getReal(yFiltered.getRow(0)));
-
-        return idft(yFiltered.getRow(0));
+        ArrayList<Double> idft = idft(yFiltered.getRow(0));
+        System.out.println("Filter Runtime: " + (System.currentTimeMillis() - startTime) + "ms");
+        return idft;
     }
 
     public static ArrayList<Double>  applyLowpass(ArrayList<Double> data, float samplingRate, double maxFrequency){
@@ -79,7 +158,7 @@ public class Filter {
         int filterIndex = (int)(freq/frequenceStep);
         Complex[] filterVector = new Complex[len/2];
 
-        if(filterIndex >=len){
+        if(filterIndex >=filterVector.length){
             throw new java.lang.IllegalArgumentException("Frequency too high");
         }
 

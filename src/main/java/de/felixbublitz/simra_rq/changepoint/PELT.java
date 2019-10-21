@@ -1,44 +1,35 @@
 package de.felixbublitz.simra_rq.changepoint;
 
 import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.List;
 
 
 public class PELT extends ChangepointAlgorithm {
 
-    List<ArrayList<Integer>> r;
-    List<Double> f;
-    List<Tuple> futureTau;
-    double k = -getPenalty(); //0?
+    ArrayList<CPCandidate> changePointCandidates;
+    double k;
 
-    public PELT(int penalty) {
+    public PELT(double penalty) {
         super(penalty);
     }
 
     @Override
     protected ArrayList<Integer> perform() {
-        r = new ArrayList<ArrayList<Integer>>();
-        f = new ArrayList<Double>();
-        futureTau = new ArrayList<Tuple>();
+
         ArrayList<Integer> changePoints = new ArrayList<Integer>();
 
+        k = getPenalty();
 
-        List<Integer> lastChange = new ArrayList<Integer>();
+        changePointCandidates = new ArrayList<CPCandidate>();
+        ArrayList<Integer> lastChange = new ArrayList<Integer>();
         lastChange.add(0);
+        changePointCandidates.add(new CPCandidate(0, -getPenalty()));
 
-        ArrayList<Integer> first = new ArrayList<Integer>();
-        first.add(0);
-        r.add(first);
+        for(int i=1; i<data.size(); i++){
 
+            CPCandidate bestCP = getOptimal(i);
 
-        f.add(-getPenalty());
-
-        for(int taust=1; taust<data.size(); taust++){
-            int tauone = getCurrentTau(taust);
-            lastChange.add(tauone);
-            r.add(getNextTaus(taust));
+            lastChange.add(bestCP.getPosition());
+            cleanChangepointCandidates(bestCP, i);
         }
 
         int i = data.size()-2;
@@ -53,34 +44,41 @@ public class PELT extends ChangepointAlgorithm {
     }
 
 
-    private ArrayList<Integer> getNextTaus(int taust){
-        ArrayList<Integer> out = new ArrayList<Integer>();
-        futureTau.add(new Tuple(taust, f.get(taust) + getCosts(taust+1,taust)+k));
+    private void cleanChangepointCandidates(CPCandidate bestCP, int i){
+        ArrayList<CPCandidate> cleanedCPs = new ArrayList<CPCandidate>();
 
-        for(Tuple t : futureTau){
-            if(t.costs <= f.get(taust)){
-                out.add(t.tau);
+        changePointCandidates.add(new CPCandidate(i, 0));
+
+        for(CPCandidate cp : changePointCandidates){
+            if(cp.getCost() + getCosts(cp.getPosition()+1,i) + k <= bestCP.getCost()){
+                cleanedCPs.add(cp);
             }
         }
+
+        changePointCandidates = cleanedCPs;
+    }
+
+    private CPCandidate getOptimal(int i){
+        double minCosts = Integer.MAX_VALUE;
+        CPCandidate out = null;
+        ArrayList<CPCandidate> newChangePointCandidates = new ArrayList<CPCandidate>();
+
+        for(CPCandidate cp : changePointCandidates){
+            double currCosts = cp.getCost() + getCosts(cp.getPosition()+1,i) + getPenalty();
+
+            //if(currCosts  <= minCosts){
+                //newChangePointCandidates.add(new CPCandidate(cp.getPosition(), cp.getCost(), currCosts - getPenalty()));
+            //}
+            if(currCosts < minCosts){
+                minCosts = currCosts;
+                out = new CPCandidate(cp.getPosition(), currCosts);
+            }
+
+        }
+        //changePointCandidates = newChangePointCandidates;
         return out;
     }
 
-    private int getCurrentTau(int taust){
-        double min = Double.MAX_VALUE;
-        int tauone = 0;
-
-        for(int tau : r.get(taust)){
-            double costs = f.get(tau) + getCosts(tau+1, taust);
-
-            if(costs + k <= min)
-                futureTau.add(new Tuple(tau, costs+k));
-            if(costs + getPenalty() <= min){
-                min = costs + getPenalty();
-                tauone = tau;
-            }
-        }
-        return tauone;
-    }
 
 
 }

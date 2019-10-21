@@ -3,7 +3,7 @@ package de.felixbublitz.simra_rq.changepoint;
 import java.util.ArrayList;
 
 public class BinarySegmentation extends ChangepointAlgorithm {
-    public BinarySegmentation(int penalty) {
+    public BinarySegmentation(double penalty) {
         super(penalty);
     }
 
@@ -19,12 +19,15 @@ public class BinarySegmentation extends ChangepointAlgorithm {
         ArrayList<Integer> changePoints = new ArrayList<Integer>();
 
         for(int i=s; i<t; i++){
+
             double cmin = getCosts(s,i) + getCosts(i+1, t) + getPenalty();
             if(cmin < min && cmin < getCosts(s,t)){
                 min = cmin;
                 index = i;
             }
         }
+
+
 
         if(index != -1){
             changePoints.addAll(perform(s, index));

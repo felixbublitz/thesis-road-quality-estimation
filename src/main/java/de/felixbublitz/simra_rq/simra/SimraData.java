@@ -46,7 +46,7 @@ public class SimraData {
                             Double.valueOf(elements[dataPosition.get("Y")]),
                             Double.valueOf(elements[dataPosition.get("Z")]));
                     gpsData.add(gps);
-                    gyroData.add(elements[dataPosition.get("a")].equals("") ? null : new GyroData(Double.parseDouble(elements[dataPosition.get("a")]), Double.parseDouble(elements[dataPosition.get("b")]), Double.parseDouble(elements[dataPosition.get("c")])));
+                    gyroData.add( !dataPosition.containsKey("a") || elements[dataPosition.get("a")].equals("") ? null : new GyroData(Double.parseDouble(elements[dataPosition.get("a")]), Double.parseDouble(elements[dataPosition.get("b")]), Double.parseDouble(elements[dataPosition.get("c")])));
                     accelerometerData.add(acc);
                     timeData.add(Long.parseLong(elements[dataPosition.get("timeStamp")]));
                 }

@@ -18,7 +18,7 @@ public class RoadMapper {
             DataSegment startSegment = getDataSegment(dataSegments, ts.getStart());
             DataSegment endSegment = getDataSegment(dataSegments, ts.getEnd());
 
-            for(int i=dataSegments.indexOf(startSegment); i<dataSegments.indexOf(endSegment); i++){
+            for(int i=dataSegments.indexOf(startSegment); i<=dataSegments.indexOf(endSegment); i++){
                 int start = i == dataSegments.indexOf(startSegment) ? ts.getStart() : dataSegments.get(i).getStart();
                 int end = i == dataSegments.indexOf(endSegment) ? ts.getEnd() : dataSegments.get(i).getEnd();
                 int posStart = ts.getRoad().getPosition(simraData.getGPSData(start,true));

@@ -1,5 +1,6 @@
 package de.felixbublitz.simra_rq.track;
 
+import de.felixbublitz.simra_rq.DebugHelper;
 import de.felixbublitz.simra_rq.database.Database;
 import de.felixbublitz.simra_rq.simra.GPSData;
 import org.json.JSONArray;
@@ -46,6 +47,8 @@ public class Road {
         this.length = getLengt();
         this.id = db.addRoad(this);
 
+        DebugHelper.showOnMap(this);
+
         System.out.println("Road " + name + " initiated: " + length + " Meter");
 
 
@@ -81,7 +84,7 @@ public class Road {
         return district;
     }
 
-    public int getPosition(GPSData px){
+   /* public int getPosition(GPSData px){
         double shortest_dist = Integer.MAX_VALUE;
         double len = -1;
         int max_dist_from_track = 50; //meter
@@ -122,7 +125,7 @@ public class Road {
             len = 0;
             shortest_dist = Integer.MAX_VALUE;
             tempLength = 0;
-            for (int i = 0; i < nodes.size(); i++) {
+            for (int i = 1; i < nodes.size(); i++) {
                 if (px.getDistanceTo(nodes.get(i)) < shortest_dist) {
                     shortest_dist = px.getDistanceTo(nodes.get(i));
                     len = tempLength + nodes.get(i).getDistanceTo(nodes.get(i - 1));
@@ -133,10 +136,14 @@ public class Road {
             }
         }
 
+        DebugHelper.showOnMap(px, getGPSPoint((int)len));
+
         return (int)Math.round((int)len*0.1)*10;
 
 
-    };
+    };*/
+
+
 
 
     private int getLengt(){
@@ -148,9 +155,119 @@ public class Road {
         return (int)Math.round(len*0.1)*10;
     };
 
+
+
     public ArrayList<GPSData> getNodes(){
         return nodes;
     }
+
+    public ArrayList<GPSData> getNodes(int start, int end){
+        double pos = 0;
+        ArrayList<GPSData> out = new ArrayList<GPSData>();
+
+        if(pos >= start && pos <= end){
+            out.add(nodes.get(0));
+        }
+        for(int i=0;i<nodes.size()-1;i++){
+            pos += nodes.get(i).getDistanceTo(nodes.get(i+1));
+            if(pos >= start && pos <= end){
+                out.add(nodes.get(i));
+            }
+        }
+
+        return nodes;
+    }
+
+    public int getPosition(GPSData px) {
+        double prevDist = Integer.MAX_VALUE;
+        double nextDist = Integer.MAX_VALUE;
+
+        double position = 0;
+        int prev = 0;
+        int next = 0;
+        double tmp=0;
+
+        for (int i = 0; i < nodes.size(); i++) {
+            if (px.getDistanceTo(nodes.get(i)) < prevDist) {
+                prevDist = px.getDistanceTo(nodes.get(i));
+                prev = i;
+                position = tmp;
+            }
+            if(i != nodes.size()-1)
+            tmp+=nodes.get(i).getDistanceTo(nodes.get(i+1));
+        }
+
+        for(int i=0;i<nodes.size(); i++){
+            if (px.getDistanceTo(nodes.get(i)) < nextDist && getAngle(nodes.get(i), px, nodes.get(prev)) < 90 && i != prev) {
+                nextDist = px.getDistanceTo(nodes.get(i));
+                next = i;
+            }
+        }
+
+       // DebugHelper.showOnMap(nodes.get(prev), px);
+
+        double dist = prevDist + nextDist;
+        double nodeDist = nodes.get(prev).getDistanceTo(nodes.get(next));
+        double progress = prevDist/dist;
+
+        if(prev < next){
+           // progress *=-1;
+        }
+
+        DebugHelper.showOnMap(px, getGPSPoint((int)(position+ progress*dist)));
+
+        return (int)(position + progress*dist);
+    }
+
+
+    public GPSData getGPSPoint(int position){
+
+        double pos = 0;
+        ArrayList<GPSData> out = new ArrayList<GPSData>();
+        double minDist =  Integer.MAX_VALUE;
+        int best =  0;
+        int secondeBest = 0;
+        double secondBestDist =0;
+        double bestPos = 0;
+
+        for(int i=0;i<nodes.size();i++){
+            double dist = Math.abs(pos-position);
+            if(dist < minDist){
+                best = i;
+                bestPos = pos;
+                minDist = dist;
+            }
+            if(i< nodes.size()-1)
+            pos += nodes.get(i).getDistanceTo(nodes.get(i+1));
+        }
+
+        if( bestPos < position){
+            secondeBest = Math.min(nodes.size()-1,best+1);
+        }else{
+            secondeBest = Math.max(0,best-1);
+        }
+
+        for(int i=1;i<nodes.size();i++){
+            secondBestDist += nodes.get(i).getDistanceTo(nodes.get(i-1));
+           if(i >= secondeBest){
+               break;
+           }
+        }
+        secondBestDist = Math.abs(secondBestDist-position);
+
+        System.out.println(position);
+        System.out.println(length);
+        double dist = minDist + secondBestDist;
+        double latDist =  nodes.get(secondeBest).getLatitude() - nodes.get(best).getLatitude();
+        double lonDist = nodes.get(secondeBest).getLongitude() - nodes.get(best).getLongitude();
+
+        double progress = minDist/dist;
+
+
+        return new GPSData(nodes.get(best).getLatitude() + progress*latDist, nodes.get(best).getLongitude() + progress * lonDist);
+
+    }
+
 
     private ArrayList<GPSData> resolveNodes(){
         return unwrapNodeGroups(getNodesFromNominatim());
@@ -299,9 +416,18 @@ public class Road {
                             !json.getJSONObject(i).getJSONObject("address").has("suburb") ||
                             json.getJSONObject(i).getJSONObject("address").getString("suburb").equals(district) &&
                                     (!json.getJSONObject(i).has("category") ||
-                                            json.getJSONObject(i).getString("category") != "railway") &&
+                                            !json.getJSONObject(i).getString("category").equals("railway")) &&
                                     (!json.getJSONObject(i).has("type") ||
-                                            json.getJSONObject(i).getString("type") != "platform")) {
+                                            (json.getJSONObject(i).getString("type").equals("tertiary") ||
+                                                    json.getJSONObject(i).getString("type").equals("primary") ||
+                                                    json.getJSONObject(i).getString("type").equals("residential") ||
+                                                    json.getJSONObject(i).getString("type").equals("trunk") ||
+                                                    json.getJSONObject(i).getString("type").equals("secondary") ||
+                                                    json.getJSONObject(i).getString("type").equals("service")||
+                                                    json.getJSONObject(i).getString("type").equals("living_street")||
+                    json.getJSONObject(i).getString("type").equals("unclassified")
+
+                                            ))) {
 
                         JSONArray nodes = json.getJSONObject(i).getJSONObject("geojson").getJSONArray("coordinates");
 
