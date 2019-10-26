@@ -5,13 +5,13 @@ import javafx.util.Pair;
 import java.util.ArrayList;
 import java.util.HashMap;
 
-public class PELTv3 extends ChangepointAlgorithm{
+public class PELT extends ChangepointAlgorithm{
     ArrayList<Double> F;
     HashMap<Integer, ArrayList<Integer>> R;
     private ArrayList<Pair<Integer, Double>> optimal;
     double K;
 
-    public PELTv3(double penalty, double samplingRate) {
+    public PELT(double penalty, double samplingRate) {
         super(penalty, samplingRate);
     }
 
