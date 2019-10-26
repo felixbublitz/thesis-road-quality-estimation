@@ -1,8 +1,8 @@
 package de.felixbublitz.simra_rq.track;
 
-import de.felixbublitz.simra_rq.quality.DataSegment;
-import de.felixbublitz.simra_rq.database.AnomalyData;
-import de.felixbublitz.simra_rq.database.RoughnessData;
+import de.felixbublitz.simra_rq.quality.segments.DataSegment;
+import de.felixbublitz.simra_rq.database.data.AnomalyData;
+import de.felixbublitz.simra_rq.database.data.RoughnessData;
 import de.felixbublitz.simra_rq.simra.SimraData;
 
 import java.util.ArrayList;
@@ -31,7 +31,6 @@ public class RoadMapper {
 
         return out;
     }
-
     public static ArrayList<AnomalyData>mapAnomalys(SimraData simraData, ArrayList<Integer> anomalyData, Track track){
         ArrayList<AnomalyData> out = new ArrayList<AnomalyData>();
         for(Integer anomaly : anomalyData){
@@ -41,8 +40,6 @@ public class RoadMapper {
 
         return out;
     }
-
-
     private static DataSegment getDataSegment(ArrayList<DataSegment> dataSegments, int x){
         for(DataSegment ds : dataSegments){
             if(ds.getStart() <= x && ds.getEnd() >= x)

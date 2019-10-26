@@ -1,4 +1,4 @@
-package de.felixbublitz.simra_rq.track;
+package de.felixbublitz.simra_rq.track.road;
 
 import de.felixbublitz.simra_rq.simra.GPSData;
 

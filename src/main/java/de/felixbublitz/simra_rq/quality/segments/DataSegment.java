@@ -1,4 +1,4 @@
-package de.felixbublitz.simra_rq.quality;
+package de.felixbublitz.simra_rq.quality.segments;
 
 import de.felixbublitz.simra_rq.etc.ListOperation;
 

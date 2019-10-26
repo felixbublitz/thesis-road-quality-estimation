@@ -1,18 +1,26 @@
-package de.felixbublitz.simra_rq.changepoint;
+package de.felixbublitz.simra_rq.changepoint.implementation;
 
+import de.felixbublitz.simra_rq.changepoint.ChangepointAlgorithm;
 import javafx.util.Pair;
 import java.util.ArrayList;
+
+/**
+ * Optimal Partitioning changepoint algorithm
+ */
 
 public class OptimalPartitioning extends ChangepointAlgorithm {
     private ArrayList<Pair<Integer, Double>> optimal;
 
     ArrayList<Double> F;
 
-
     public OptimalPartitioning(double penalty, double samplingRate) {
         super(penalty, samplingRate);
     }
 
+    /**
+     * find changepoints
+     * @return found changepoints
+     */
     @Override
     protected ArrayList<Integer> perform() {
         ArrayList<Integer> changePoints = new ArrayList<Integer>();
@@ -40,7 +48,11 @@ public class OptimalPartitioning extends ChangepointAlgorithm {
         return changePoints;
     }
 
-
+    /**
+     * Get optimal changepoint for current positiion
+     * @param k current position
+     * @return optimal changepoint and costs for the partition
+     */
     private Pair<Integer, Double> getOptimal(int k){
         double minCosts = Double.MAX_VALUE;
         Pair out = null;

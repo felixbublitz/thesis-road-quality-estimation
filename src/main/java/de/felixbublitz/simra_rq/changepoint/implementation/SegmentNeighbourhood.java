@@ -1,8 +1,13 @@
-package de.felixbublitz.simra_rq.changepoint;
+package de.felixbublitz.simra_rq.changepoint.implementation;
 
+import de.felixbublitz.simra_rq.changepoint.ChangepointAlgorithm;
 import javafx.util.Pair;
 
 import java.util.ArrayList;
+
+/**
+ * Segment Neighbourhood changepoint algorithm
+ */
 
 public class SegmentNeighbourhood extends ChangepointAlgorithm {
     private int kMax;
@@ -13,6 +18,10 @@ public class SegmentNeighbourhood extends ChangepointAlgorithm {
         this.kMax = kMax;
     }
 
+    /**
+     * find changepoints
+     * @return found changepoints
+     */
     @Override
     protected ArrayList<Integer> perform() {
         ArrayList<Integer> changePoints = new ArrayList<Integer>();

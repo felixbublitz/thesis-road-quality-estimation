@@ -1,10 +1,11 @@
-package de.felixbublitz.simra_rq;
+package de.felixbublitz.simra_rq.etc;
 
-import de.felixbublitz.simra_rq.mapview.Map;
-import de.felixbublitz.simra_rq.quality.DataSegment;
+import de.felixbublitz.simra_rq.map.Map;
+import de.felixbublitz.simra_rq.quality.segments.DataSegment;
 import de.felixbublitz.simra_rq.simra.GPSData;
 import de.felixbublitz.simra_rq.simra.SimraData;
 import de.felixbublitz.simra_rq.track.*;
+import de.felixbublitz.simra_rq.track.road.Road;
 import org.knowm.xchart.SwingWrapper;
 import org.knowm.xchart.XYChart;
 import org.knowm.xchart.XYChartBuilder;

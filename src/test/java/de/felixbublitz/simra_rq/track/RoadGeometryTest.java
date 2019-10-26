@@ -3,9 +3,8 @@ package de.felixbublitz.simra_rq.track;
 import de.felixbublitz.simra_rq.database.Database;
 import de.felixbublitz.simra_rq.simra.GPSData;
 import de.felixbublitz.simra_rq.simra.SimraData;
+import de.felixbublitz.simra_rq.track.road.Road;
 import org.junit.jupiter.api.Test;
-
-import static org.junit.jupiter.api.Assertions.*;
 
 class RoadGeometryTest {
 

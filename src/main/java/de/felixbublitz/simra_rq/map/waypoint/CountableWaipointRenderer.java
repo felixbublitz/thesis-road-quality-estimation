@@ -1,6 +1,5 @@
-package de.felixbublitz.simra_rq.mapview.waypoint;
+package de.felixbublitz.simra_rq.map.waypoint;
 
-import de.felixbublitz.simra_rq.mapview.waypoint.CountableWaypoint;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.jxmapviewer.JXMapViewer;

@@ -1,4 +1,4 @@
-package de.felixbublitz.simra_rq.mapview.adapter;
+package de.felixbublitz.simra_rq.map.adapter;
 
 import org.jxmapviewer.JXMapViewer;
 

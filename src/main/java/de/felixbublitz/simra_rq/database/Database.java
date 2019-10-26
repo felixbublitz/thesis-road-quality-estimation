@@ -1,8 +1,9 @@
 package de.felixbublitz.simra_rq.database;
-import de.felixbublitz.simra_rq.changepoint.Tuple;
+import de.felixbublitz.simra_rq.database.data.AnomalyData;
+import de.felixbublitz.simra_rq.database.data.RoughnessData;
 import de.felixbublitz.simra_rq.simra.GPSData;
-import de.felixbublitz.simra_rq.track.Road;
-import de.felixbublitz.simra_rq.track.RoadNode;
+import de.felixbublitz.simra_rq.track.road.Road;
+import de.felixbublitz.simra_rq.track.road.RoadNode;
 import de.felixbublitz.simra_rq.track.RoadPath;
 import javafx.util.Pair;
 
@@ -40,8 +41,6 @@ public class Database {
         }
 
     }
-
-
 
     private void connect(String file) {
         try {
@@ -103,14 +102,12 @@ public class Database {
 
     }
 
-
     public boolean insert(Object data){
 
         ArrayList<Object> list = (ArrayList<Object>) data;
 
         if(list.size() == 0)
             return true;
-
 
         if(list.get(0).getClass() == AnomalyData.class){
             for(Object a : list){
@@ -171,7 +168,6 @@ public class Database {
         return out;
     }
 
-
     public Pair getQualityIndex(String identifier){
         DBQuery d =  new DBQuery(connection).select("QI_" + identifier).cells("maxV", "minV");
         ArrayList<HashMap<String, String>> result = d.getResult();
@@ -214,8 +210,6 @@ public class Database {
         return roadID;
     }
 
-
-
     public ArrayList<Road> getRoads(){
         DBQuery d =  new DBQuery(connection).select("roads").cells("id", "name", "district", "length");
         ArrayList<HashMap<String, String>> results = d.getResult();
@@ -227,9 +221,5 @@ public class Database {
 
         return out;
     }
-
-
-
-
 
 }

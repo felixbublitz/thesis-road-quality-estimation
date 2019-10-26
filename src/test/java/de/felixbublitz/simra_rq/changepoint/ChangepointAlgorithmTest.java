@@ -1,6 +1,7 @@
 package de.felixbublitz.simra_rq.changepoint;
 
-import de.felixbublitz.simra_rq.quality.DataSegment;
+import de.felixbublitz.simra_rq.changepoint.implementation.OptimalPartitioning;
+import de.felixbublitz.simra_rq.quality.segments.DataSegment;
 import de.felixbublitz.simra_rq.simra.SimraData;
 import org.knowm.xchart.SwingWrapper;
 import org.knowm.xchart.XYChart;
@@ -10,8 +11,6 @@ import org.knowm.xchart.XYSeries;
 import java.util.ArrayList;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Stream;
-
-import static org.junit.jupiter.api.Assertions.*;
 
 class ChangepointAlgorithmTest {
 

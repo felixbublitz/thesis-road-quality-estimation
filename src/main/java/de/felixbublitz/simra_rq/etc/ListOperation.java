@@ -5,15 +5,12 @@ import java.util.List;
 
 public class ListOperation {
 
-
     public static double getMean(List<Double> data){
         double values = 0;
         for(Double d : data)
             values +=d;
         return values/data.size();
     }
-
-
 
     public static double getVariance(List<Double> data){
         double m = getMean(data);

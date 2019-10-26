@@ -3,6 +3,7 @@ package de.felixbublitz.simra_rq.track;
 import de.felixbublitz.simra_rq.database.Database;
 import de.felixbublitz.simra_rq.simra.GPSData;
 import de.felixbublitz.simra_rq.simra.SimraData;
+import de.felixbublitz.simra_rq.track.road.Road;
 import org.json.JSONObject;
 
 import java.io.IOException;
@@ -15,9 +16,12 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 
+/**
+ * A Track is the representation of a list of GPSData as a list of TrackSegments.
+ * Each TrackSegment represents a driven passage on a specific road.
+ */
 
 public class Track {
 
@@ -31,6 +35,12 @@ public class Track {
     private SimraData sd;
 
 
+    /**
+     * Create a track by mapping all gps data from SimraData to a road
+     * The track consists of TrackSegments which represents the driven path on the different roads
+     * @param sd SimraDat
+     * @param db DataBase
+     */
     public Track(SimraData sd, Database db){
         long startTime = System.currentTimeMillis();
         segments = new ArrayList<TrackSegment>();
@@ -56,16 +66,30 @@ public class Track {
 
     }
 
+    /**
+     * Get all tack segments
+     * @return list of track segments
+     */
     public ArrayList<TrackSegment> getSegments(){
         return segments;
     }
-    public TrackSegment getSegment(int x){
+
+    /**
+     * Get the track segment for the data index x
+     * @param index data index
+     * @return track segment
+     */
+    public TrackSegment getSegment(int index){
         for(TrackSegment s : segments){
-            if(s.getStart() <= x && s.getEnd() >= x)
+            if(s.getStart() <= index && s.getEnd() >= index)
                 return s;
         }
         return null;
     }
+
+    /**
+     * remove tracks which are to small and join tracks of same roads
+     */
     private void cleanTrack(){
 
         List<TrackSegment> processedSegments = new ArrayList<TrackSegment>();
@@ -114,19 +138,24 @@ public class Track {
         segments = cleanedList2;
 
     }
-    private TrackSegment getSegment(Road r){
-        for(TrackSegment ts : segments){
-            if(ts.getRoad() == r)
-                return ts;
-        }
-        return null;
-    }
+
+
+    /**
+     * Get the last segment of the track
+     * @return last segment of track
+     */
     private TrackSegment getLastSegment(){
         if(segments.size() == 0)
             return null;
 
         return segments.get(segments.size()-1);
     }
+
+    /**
+     * Add a Road to track
+     * @param road Road to add to track
+     * @param i Index of Data
+     */
     private void addRoadToTrack(Road road, int i){
         TrackSegment ts = getLastSegment();
         if(ts != null && ts.getRoad() == road && (ts.getEndPosition() == null  || ts.getRoad().getPosition(sd.getGPSData(i, true) )==null ||  Math.abs(ts.getEndPosition() - ts.getRoad().getPosition(sd.getGPSData(i, true))) <= 30 )){
@@ -135,6 +164,13 @@ public class Track {
             segments.add(new TrackSegment(road,sd, i,i));
         }
     }
+
+    /**
+     * Get a Road by name and district either from internal storage, database or create a new one
+     * @param name name of road
+     * @param district district of road
+     * @return
+     */
     private Road getRoad(String name, String district){
 
         Road r;
@@ -154,6 +190,12 @@ public class Track {
         return r;
 
     }
+
+    /**
+     * Get road name and district by reverse geocoding
+     * @param gps GPS data to lookup
+     * @return Map of name and district
+     */
     private Map<String, String> getRoadIdentifier(GPSData gps) {
         int tries = 0;
         while (tries <= 20) {

@@ -1,9 +1,9 @@
-package de.felixbublitz.simra_rq.track;
+package de.felixbublitz.simra_rq.track.road;
 
-import de.felixbublitz.simra_rq.etc.DebugHelper;
 import de.felixbublitz.simra_rq.database.Database;
 import de.felixbublitz.simra_rq.simra.GPSData;
 import de.felixbublitz.simra_rq.simra.SimraData;
+import de.felixbublitz.simra_rq.track.RoadPath;
 
 import java.util.ArrayList;
 

@@ -1,25 +1,35 @@
 package de.felixbublitz.simra_rq.changepoint;
 
 import de.felixbublitz.simra_rq.etc.ListOperation;
-
-import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.List;
+
+/**
+ * changepoint algorithm super class
+ */
 
 public abstract class ChangepointAlgorithm {
 
     protected double mean = 0;
-    protected List<Double> variances;
     private double penaltyFactor;
     protected ArrayList<Double> data;
     private double samplingRate;
 
+    /**
+     * create new changepoint algorithm
+     * @param penaltyFactor penalty factor
+     * @param samplingRate sampling rate of data
+     */
     public ChangepointAlgorithm(double penaltyFactor, double samplingRate){
         this.penaltyFactor = penaltyFactor;
         this.samplingRate = samplingRate;
     }
 
+    /**
+     * Get all changepoints of given data
+     * @param data data to analyse for changepoints
+     * @return founded changepoints
+     */
     public ArrayList<Integer> getChangepoints(ArrayList<Double> data){
         this.mean = ListOperation.getMean(data);
         this.data = data;
@@ -37,55 +47,38 @@ public abstract class ChangepointAlgorithm {
         return changePoints;
     }
 
+    /**
+     * perform the changepoint algorithm
+     * @return found changepoints
+     */
+
     protected ArrayList<Integer> perform(){
         return null;
     }
 
+    /**
+     * Get the penalty
+     * @return penalty
+     */
     protected double getPenalty(){
         return (1/samplingRate) * penaltyFactor ;
     }
 
 
-
-/*
-    public double getCosts(int s, int t){
-
-        if(t < s){
-            return 0;
-        }
-
-        double mean = ListOperation.getMean(data);
-        double varST = ListOperation.getVariance(data.subList(s,t));
-
-
-        double standarddevST = ListOperation.getStandardDeviation(data.subList(s,t));
-
-        double sum = 0;
-
-        for(int i=s; i<t;i++){
-            sum += Math.pow(data.get(i)-mean,2);
-        }
-        int len = t-s;
-
-
-        return -2*((-len/2) * ln(2*Math.PI*varST)-(sum/2*varST));
-    }
-
-    private double ln(double l){
-        return Math.log(l)/Math.log(Math.E);
-    }
-*/
-
+    /**
+     * Get costs of partition data in segment s to t
+     * @param s start point
+     * @param t end point
+     * @return costs
+     */
     protected double getCosts(int s, int t) {
 
         if(t<=s){
             return 0;
         }
-
         double sum = 0;
         double mu = ListOperation.getMean(data.subList(s, t));
         double var = ListOperation.getVariance(data.subList(s, t));
-
 
         for (int i = s; i < t; i++) {
             double p1 = Math.abs(data.get(i) - mu);
@@ -97,35 +90,8 @@ public abstract class ChangepointAlgorithm {
             return 0;
         }
 
-
         sum = sum/Math.sqrt(var);
-
         return sum;
     }
-
-/*
-
-    protected double getCosts(int s, int t){
-       if(t<=s){
-           return 0;
-       }
-
-        double sum = 0;
-        double mu = ListOperation.getMean(data);
-        double var = ListOperation.getVariance(data.subList(s,t));
-
-
-        if(var == 0)
-            return 0;
-
-        for(int i=s;i<t; i++){
-            sum += (Math.pow(data.get(i)-mu,2) /var) + Math.log(2 * Math.PI * var);
-        }
-
-
-        return sum;
-    }
-*/
-
 
 }

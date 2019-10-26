@@ -1,12 +1,25 @@
-package de.felixbublitz.simra_rq.quality;
+package de.felixbublitz.simra_rq.quality.anomaly;
 
 import de.felixbublitz.simra_rq.etc.ListOperation;
+import de.felixbublitz.simra_rq.quality.segments.DataSegment;
 
 import java.util.ArrayList;
 import java.util.Collections;
 
+/**
+ * Detection of Anomalies
+ */
+
 public class AnomalyDetection {
 
+    /**
+     * Detect anomalies on segments of data by finding swings
+     * @param data data to analyse for peaks
+     * @param segments partitions of data by variance
+     * @param threshold threshold value
+     * @param eliminationDistance elimination distance in seconds around anomaly
+     * @return
+     */
     public static ArrayList<Integer> getPeaks(ArrayList<Double> data, ArrayList<DataSegment> segments, double threshold, int eliminationDistance){
         long startTime = System.currentTimeMillis();
         double variance = ListOperation.getVariance(data);
@@ -22,9 +35,9 @@ public class AnomalyDetection {
             }
 
             while(peakCandidates.size() != 0){
-                int largest = getLargestPeak(data, peakCandidates);
-                peaks.add(peakCandidates.get(largest));
-                cleanPeakCandidates(peakCandidates, largest, eliminationDistance);
+                int largestPeakIndex = getLargestPeak(data, peakCandidates);
+                peaks.add(peakCandidates.get(largestPeakIndex));
+                cleanPeakCandidates(peakCandidates, largestPeakIndex, eliminationDistance);
             }
 
         }
@@ -36,9 +49,15 @@ public class AnomalyDetection {
 
     }
 
-    private static void cleanPeakCandidates(ArrayList<Integer> peakCandidates, int largest, int eliminationDistance){
+    /**
+     * delete all peaks from peak candidates list, which are within the elimination area
+     * @param peakCandidates all peak candidates
+     * @param peakIndex index of a peak
+     * @param eliminationDistance elimination distance in seconds around anomaly
+     */
+    private static void cleanPeakCandidates(ArrayList<Integer> peakCandidates, int peakIndex, int eliminationDistance){
         int i = 0;
-        double lvalue = peakCandidates.get(largest);
+        double lvalue = peakCandidates.get(peakIndex);
 
         while(i < peakCandidates.size()){
             if(Math.abs(peakCandidates.get(i) - lvalue) < eliminationDistance){
@@ -50,6 +69,12 @@ public class AnomalyDetection {
         }
     }
 
+    /**
+     *
+     * @param data
+     * @param peakCandidates
+     * @return
+     */
     private static int getLargestPeak(ArrayList<Double> data, ArrayList<Integer> peakCandidates){
         double max = 0;
         int index = 0;
@@ -62,6 +87,11 @@ public class AnomalyDetection {
         return index;
     }
 
+    /**
+     * Detect anomalies by evasion movements
+     * @param data
+     * @return
+     */
     public static ArrayList<Integer> getEvasions(ArrayList<Double> data){
         throw new java.lang.UnsupportedOperationException("Not implemented yet.");
     }

@@ -1,6 +1,6 @@
-package de.felixbublitz.simra_rq.database;
+package de.felixbublitz.simra_rq.database.data;
 
-import de.felixbublitz.simra_rq.track.Road;
+import de.felixbublitz.simra_rq.track.road.Road;
 
 import java.text.SimpleDateFormat;
 import java.util.Date;

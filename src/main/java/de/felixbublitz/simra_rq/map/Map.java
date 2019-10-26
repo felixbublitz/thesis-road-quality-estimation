@@ -1,13 +1,13 @@
-package de.felixbublitz.simra_rq.mapview;
+package de.felixbublitz.simra_rq.map;
 
-import de.felixbublitz.simra_rq.mapview.adapter.SelectionAdapter;
-import de.felixbublitz.simra_rq.mapview.painter.RectPainter;
-import de.felixbublitz.simra_rq.mapview.painter.RoutePainter;
-import de.felixbublitz.simra_rq.mapview.painter.SelectionPainter;
-import de.felixbublitz.simra_rq.mapview.waypoint.CountableWaipointRenderer;
-import de.felixbublitz.simra_rq.mapview.waypoint.CountableWaypoint;
+import de.felixbublitz.simra_rq.map.adapter.SelectionAdapter;
+import de.felixbublitz.simra_rq.map.painter.RectPainter;
+import de.felixbublitz.simra_rq.map.painter.RoutePainter;
+import de.felixbublitz.simra_rq.map.painter.SelectionPainter;
+import de.felixbublitz.simra_rq.map.waypoint.CountableWaipointRenderer;
+import de.felixbublitz.simra_rq.map.waypoint.CountableWaypoint;
 import de.felixbublitz.simra_rq.simra.GPSData;
-import de.felixbublitz.simra_rq.track.RoadNode;
+import de.felixbublitz.simra_rq.track.road.RoadNode;
 import de.felixbublitz.simra_rq.track.RoadPath;
 import org.jxmapviewer.JXMapViewer;
 import org.jxmapviewer.OSMTileFactoryInfo;
@@ -52,8 +52,6 @@ public class Map {
             addPath(path, color);
         }
     }
-
-
 
     public void addNodes(GPSData ...nodes){
         HashSet<Waypoint> waypoints = new HashSet<Waypoint>();

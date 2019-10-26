@@ -1,13 +1,7 @@
 package de.felixbublitz.simra_rq.track;
 
-import de.felixbublitz.simra_rq.DebugHelper;
-import de.felixbublitz.simra_rq.simra.GPSData;
 import de.felixbublitz.simra_rq.simra.SimraData;
-import de.felixbublitz.simra_rq.track.Road;
-
-import java.io.InvalidObjectException;
-import java.lang.reflect.Array;
-import java.util.ArrayList;
+import de.felixbublitz.simra_rq.track.road.Road;
 
 public class TrackSegment {
     private Road road;

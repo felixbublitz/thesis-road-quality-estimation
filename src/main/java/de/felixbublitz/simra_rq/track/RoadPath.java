@@ -1,19 +1,10 @@
 package de.felixbublitz.simra_rq.track;
 
-import de.felixbublitz.simra_rq.DebugHelper;
 import de.felixbublitz.simra_rq.etc.GPSOperation;
 import de.felixbublitz.simra_rq.simra.GPSData;
-import org.json.JSONArray;
+import de.felixbublitz.simra_rq.track.road.RoadNode;
 
-import java.io.IOException;
-import java.net.URI;
-import java.net.URISyntaxException;
-import java.net.http.HttpClient;
-import java.net.http.HttpRequest;
-import java.net.http.HttpResponse;
 import java.util.ArrayList;
-import java.util.Collections;
-import java.util.concurrent.TimeUnit;
 
 public class RoadPath {
 
@@ -29,9 +20,6 @@ public class RoadPath {
             this.nodes = getRoadNodes(nodes);
 
     }
-
-
-
 
     private ArrayList<RoadNode> getRoadNodes(ArrayList<GPSData> nodes){
         ArrayList<RoadNode> out = new ArrayList<>();
@@ -116,7 +104,6 @@ public class RoadPath {
         return nearest;
     }
 
-
     private RoadNode getNearestNode(int position){
         double minDist = Double.MAX_VALUE;
         RoadNode nearest = null;
@@ -129,7 +116,6 @@ public class RoadPath {
         }
         return nearest;
     }
-
 
     public GPSData getGPSPoint(int position){
 
@@ -155,8 +141,6 @@ public class RoadPath {
         return new GPSData(nearestNode.getGPSData().getLatitude() + progress*latDist, nearestNode.getGPSData().getLongitude() + progress * lonDist);
 
     }
-
-
 
     public Integer getPosition(GPSData px) {
         RoadNode nearestNode = getNearestNode(px);
@@ -187,46 +171,6 @@ public class RoadPath {
         return out;
     }
 
-
-
-
-    /*
-    public ArrayList<GPSData> getNodes(int start, int end){
-        double pos = 0;
-        ArrayList<GPSData> out = new ArrayList<GPSData>();
-
-        if(pos >= start && pos <= end){
-            out.add(nodes.get(0));
-        }
-        for(int i=0;i<nodes.size()-1;i++){
-            pos += nodes.get(i).getDistanceTo(nodes.get(i+1));
-            if(pos >= start && pos <= end){
-                out.add(nodes.get(i));
-            }
-        }
-
-        return nodes;
-    }
-
-    private int getLengt(){
-        int len = 0;
-        for(ArrayList<GPSData> n : nodes) {
-            for (int i = 0; i < n.size() - 1; i++) {
-                len += n.get(i).getDistanceTo(n.get(i + 1));
-            }
-        }
-
-        return (int)Math.round(len*0.1)*10;
-    };
-
-
-
-
-
-
-
-
- */
 
 
 }

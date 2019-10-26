@@ -1,13 +1,9 @@
-package de.felixbublitz.simra_rq.mapview.painter;
+package de.felixbublitz.simra_rq.map.painter;
 
 import org.jxmapviewer.JXMapViewer;
 import org.jxmapviewer.painter.Painter;
-import org.jxmapviewer.viewer.GeoPosition;
 
 import java.awt.*;
-import java.awt.geom.Point2D;
-import java.util.ArrayList;
-import java.util.List;
 
 public class RectPainter implements Painter<JXMapViewer> {
 
