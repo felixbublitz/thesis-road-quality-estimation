@@ -1,4 +1,4 @@
-package de.felixbublitz.simra_rq.mapview;
+package de.felixbublitz.simra_rq.mapview.painter;
 
 import org.jxmapviewer.JXMapViewer;
 import org.jxmapviewer.painter.Painter;
@@ -13,7 +13,6 @@ public class RectPainter implements Painter<JXMapViewer> {
 
     private Color color = Color.GRAY;
 
-
     public RectPainter(Color color)
     {
         this.color = color;
@@ -23,17 +22,9 @@ public class RectPainter implements Painter<JXMapViewer> {
     public void paint(Graphics2D g, JXMapViewer map, int w, int h)
     {
         g = (Graphics2D) g.create();
-
-        // convert from viewport to world bitmap
         Rectangle rect = map.getViewportBounds();
-       // g.translate(-rect.x, -rect.y);
-
-
-        // do the drawing again
         g.setColor(color);
         g.fillRect(0,0,w,h);
-
-
         g.dispose();
     }
 

@@ -1,4 +1,4 @@
-package de.felixbublitz.simra_rq.mapview;
+package de.felixbublitz.simra_rq.mapview.painter;
 
 import java.awt.BasicStroke;
 import java.awt.Color;
@@ -13,10 +13,7 @@ import org.jxmapviewer.JXMapViewer;
 import org.jxmapviewer.viewer.GeoPosition;
 import org.jxmapviewer.painter.Painter;
 
-/**
- * Paints a route
- * @author Martin Steiger
- */
+
 public class RoutePainter implements Painter<JXMapViewer>
 {
     private Color color = Color.RED;

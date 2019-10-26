@@ -1,16 +1,16 @@
-package de.felixbublitz.simra_rq.mapview;
+package de.felixbublitz.simra_rq.mapview.waypoint;
 
 import org.jxmapviewer.viewer.DefaultWaypoint;
 import org.jxmapviewer.viewer.GeoPosition;
 
-public class AdvWaipoint extends DefaultWaypoint {
+public class CountableWaypoint extends DefaultWaypoint {
     private String text;
 
     public String getText() {
         return text;
     }
 
-    public AdvWaipoint(double latitude, double longitude, String text) {
+    public CountableWaypoint(double latitude, double longitude, String text) {
         super(new GeoPosition(latitude, longitude));
         this.text = text;
     }

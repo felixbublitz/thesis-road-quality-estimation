@@ -1,7 +1,7 @@
 package de.felixbublitz.simra_rq.quality;
 
 import de.felixbublitz.simra_rq.changepoint.ChangepointAlgorithm;
-import de.felixbublitz.simra_rq.changepoint.PELT;
+import de.felixbublitz.simra_rq.changepoint.implementation.PELT;
 
 import java.util.ArrayList;
 

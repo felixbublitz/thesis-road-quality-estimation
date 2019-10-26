@@ -1,9 +1,16 @@
 package de.felixbublitz.simra_rq.mapview;
 
+import de.felixbublitz.simra_rq.mapview.adapter.SelectionAdapter;
+import de.felixbublitz.simra_rq.mapview.painter.RectPainter;
+import de.felixbublitz.simra_rq.mapview.painter.RoutePainter;
+import de.felixbublitz.simra_rq.mapview.painter.SelectionPainter;
+import de.felixbublitz.simra_rq.mapview.waypoint.CountableWaipointRenderer;
+import de.felixbublitz.simra_rq.mapview.waypoint.CountableWaypoint;
 import de.felixbublitz.simra_rq.simra.GPSData;
 import de.felixbublitz.simra_rq.track.RoadNode;
 import de.felixbublitz.simra_rq.track.RoadPath;
 import org.jxmapviewer.JXMapViewer;
+import org.jxmapviewer.OSMTileFactoryInfo;
 import org.jxmapviewer.cache.FileBasedLocalCache;
 import org.jxmapviewer.input.CenterMapListener;
 import org.jxmapviewer.input.PanKeyListener;
@@ -16,7 +23,6 @@ import javax.swing.*;
 import javax.swing.event.MouseInputListener;
 import java.awt.*;
 import java.io.File;
-import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.HashSet;
 
@@ -54,12 +60,12 @@ public class Map {
         HashSet<GeoPosition> geo =  new HashSet<GeoPosition>();
         for(int i=0; i<nodes.length; i++) {
             GPSData node = nodes[i];
-            waypoints.add(new AdvWaipoint(node.getLatitude(), node.getLongitude(), ""+i));
+            waypoints.add(new CountableWaypoint(node.getLatitude(), node.getLongitude(), ""+i));
             geo.add(new GeoPosition(node.getLatitude(), node.getLongitude()));
         }
 
         WaypointPainter<Waypoint> waypointPainter = new WaypointPainter<Waypoint>();
-        WaypointRenderer a = new AdvWaypointRenderer();
+        WaypointRenderer a = new CountableWaipointRenderer();
         waypointPainter.setRenderer(a);
         waypointPainter.setWaypoints(waypoints);
     }
@@ -98,7 +104,7 @@ public class Map {
 
     public void initMap(){
         // Create a TileFactoryInfo for OpenStreetMap
-        AdvancedOSMTileFactoryInfo info = new AdvancedOSMTileFactoryInfo();
+        OSMTileFactoryInfo info = new OSMTileFactoryInfo();
         DefaultTileFactory tileFactory = new DefaultTileFactory(info);
 
         // Setup local file cache

@@ -1,6 +1,7 @@
-package de.felixbublitz.simra_rq.mapview;
+package de.felixbublitz.simra_rq.mapview.painter;
 
 
+import de.felixbublitz.simra_rq.mapview.adapter.SelectionAdapter;
 import org.jxmapviewer.painter.Painter;
 
 import java.awt.*;

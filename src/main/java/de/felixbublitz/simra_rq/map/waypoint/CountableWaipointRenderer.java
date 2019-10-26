@@ -1,5 +1,6 @@
-package de.felixbublitz.simra_rq.mapview;
+package de.felixbublitz.simra_rq.mapview.waypoint;
 
+import de.felixbublitz.simra_rq.mapview.waypoint.CountableWaypoint;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.jxmapviewer.JXMapViewer;
@@ -12,12 +13,12 @@ import java.awt.geom.Point2D;
 import java.awt.image.BufferedImage;
 import java.awt.image.ImageObserver;
 
-public class AdvWaypointRenderer implements WaypointRenderer<AdvWaipoint> {
+public class CountableWaipointRenderer implements WaypointRenderer<CountableWaypoint> {
 
     private static final Log log = LogFactory.getLog(DefaultWaypointRenderer.class);
     private BufferedImage img = null;
 
-    public AdvWaypointRenderer() {
+    public CountableWaipointRenderer() {
         try {
             this.img = ImageIO.read(DefaultWaypointRenderer.class.getResource("/images/standard_waypoint.png"));
         } catch (Exception var2) {
@@ -26,7 +27,7 @@ public class AdvWaypointRenderer implements WaypointRenderer<AdvWaipoint> {
 
     }
 
-    public void paintWaypoint(Graphics2D g, JXMapViewer map, AdvWaipoint w) {
+    public void paintWaypoint(Graphics2D g, JXMapViewer map, CountableWaypoint w) {
         if (this.img != null) {
             Point2D point = map.getTileFactory().geoToPixel(w.getPosition(), map.getZoom());
             int x = (int)point.getX() - this.img.getWidth() / 2;

@@ -1,4 +1,4 @@
-package de.felixbublitz.simra_rq.mapview;
+package de.felixbublitz.simra_rq.mapview.adapter;
 
 import org.jxmapviewer.JXMapViewer;
 
@@ -14,9 +14,7 @@ public class SelectionAdapter extends MouseAdapter {
     private Point2D startPos = new Point2D.Double();
     private Point2D endPos = new Point2D.Double();
 
-    /**
-     * @param viewer the jxmapviewer
-     */
+
     public SelectionAdapter(JXMapViewer viewer) {
         this.viewer = viewer;
     }

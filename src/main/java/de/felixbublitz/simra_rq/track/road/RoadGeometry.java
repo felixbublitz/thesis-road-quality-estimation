@@ -1,6 +1,5 @@
 package de.felixbublitz.simra_rq.track;
 
-import de.felixbublitz.simra_rq.DebugHelper;
 import de.felixbublitz.simra_rq.etc.GPSOperation;
 import de.felixbublitz.simra_rq.etc.ListOperation;
 import de.felixbublitz.simra_rq.simra.GPSData;
@@ -22,7 +21,6 @@ public class RoadGeometry {
     ArrayList<RoadPath> paths;
     ArrayList<Integer>pathLengths;
     Road road;
-
     private final String API_SEARCH = "http://localhost/nominatim/search?";
     private final int MAX_ROAD_ANGLE =90;
 
@@ -35,8 +33,6 @@ public class RoadGeometry {
             throw new IllegalArgumentException("couldn't find any road path");
 
     }
-
-
     public RoadGeometry(Road road, ArrayList<RoadPath> paths){
         this.road = road;
         if(paths.size() == 0)
@@ -52,7 +48,6 @@ public class RoadGeometry {
         }
         return len;
     }
-
     private ArrayList<Integer> getPathLengths(){
         ArrayList<Integer> lengths = new  ArrayList<Integer>();
         for(RoadPath p : paths){
@@ -60,7 +55,6 @@ public class RoadGeometry {
         }
         return lengths;
     }
-
     public RoadPath getPath(int position){
         int pos = 0;
         for(RoadPath path : paths){
@@ -71,7 +65,6 @@ public class RoadGeometry {
         }
         return null;
     }
-
     public int getRelativePosition(int position, RoadPath p){
         int index = paths.indexOf(p);
         int offset = (int)(index>0 ?ListOperation.getSum(pathLengths.subList(0,index-1)) : 0);
@@ -80,7 +73,6 @@ public class RoadGeometry {
         }
         return position;
     }
-
     public GPSData getGPSPoint(int absolutePosition){
         RoadPath path = getPath(absolutePosition);
         if(path == null)
@@ -88,12 +80,9 @@ public class RoadGeometry {
 
         return path.getGPSPoint(getRelativePosition(absolutePosition, path));
     }
-
     public ArrayList<RoadPath> getPaths(){
         return paths;
     }
-
-
     public RoadPath getPath(Integer start, Integer end) {
 
         if(start == null || end == null){
@@ -105,20 +94,15 @@ public class RoadGeometry {
         return path.getIntersection(start,end);
 
     }
-
-        public Integer getPosition(GPSData gps){
+    public Integer getPosition(GPSData gps){
         for(int i=0; i<paths.size(); i++){
             Integer pos = paths.get(i).getPosition(gps);
             if(pos != null)
                 return (int)(i>0 ? ListOperation.getSum(pathLengths.subList(0,i)) : 0) + pos;
         }
 
-       // DebugHelper.showOnMap(road, gps);
         return  null;
     }
-
-
-
     private ArrayList<ArrayList<GPSData>> getNodes(){
         int tries = 0;
         while (tries <= 20) {
@@ -220,7 +204,6 @@ public class RoadGeometry {
         throw new IllegalStateException("API not available");
 
     }
-
     private ArrayList<RoadPath>getRoadPaths(){
 
 
@@ -266,7 +249,6 @@ public class RoadGeometry {
         return out;
 
     }
-
     private int getSegmentLength(ArrayList<GPSData> segment){
         int len = 0;
         for(int i=0; i<segment.size()-1;i++){
@@ -275,7 +257,6 @@ public class RoadGeometry {
 
         return len;
     }
-
     private ArrayList<GPSData> appendGroup(ArrayList<GPSData> g1, ArrayList<GPSData> g2){
 
         ArrayList<GPSData> out = new ArrayList<GPSData>();
