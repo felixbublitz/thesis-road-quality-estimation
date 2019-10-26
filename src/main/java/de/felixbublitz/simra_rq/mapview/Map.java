@@ -10,14 +10,15 @@ import org.jxmapviewer.input.PanKeyListener;
 import org.jxmapviewer.input.PanMouseInputListener;
 import org.jxmapviewer.input.ZoomMouseWheelListenerCursor;
 import org.jxmapviewer.painter.CompoundPainter;
-import org.jxmapviewer.viewer.DefaultTileFactory;
-import org.jxmapviewer.viewer.GeoPosition;
+import org.jxmapviewer.viewer.*;
 
 import javax.swing.*;
 import javax.swing.event.MouseInputListener;
 import java.awt.*;
 import java.io.File;
+import java.lang.reflect.Array;
 import java.util.ArrayList;
+import java.util.HashSet;
 
 public class Map {
     private JXMapViewer mapViewer;
@@ -31,13 +32,36 @@ public class Map {
         initMap();
     }
 
-    public void addTrack(RoadPath path, Color color){
+    public void addPath(RoadPath path, Color color){
         ArrayList<GeoPosition> track = new ArrayList<>();
 
         for(RoadNode n: path.getNodes()){
             track.add(new GeoPosition(n.getGPSData().getLatitude(),n.getGPSData().getLongitude()));
         }
         painter.add(new RoutePainter(track, color, 2));
+    }
+
+    public void addPaths(ArrayList<RoadPath> paths, Color color){
+        for(RoadPath path: paths){
+            addPath(path, color);
+        }
+    }
+
+
+
+    public void addNodes(GPSData ...nodes){
+        HashSet<Waypoint> waypoints = new HashSet<Waypoint>();
+        HashSet<GeoPosition> geo =  new HashSet<GeoPosition>();
+        for(int i=0; i<nodes.length; i++) {
+            GPSData node = nodes[i];
+            waypoints.add(new AdvWaipoint(node.getLatitude(), node.getLongitude(), ""+i));
+            geo.add(new GeoPosition(node.getLatitude(), node.getLongitude()));
+        }
+
+        WaypointPainter<Waypoint> waypointPainter = new WaypointPainter<Waypoint>();
+        WaypointRenderer a = new AdvWaypointRenderer();
+        waypointPainter.setRenderer(a);
+        waypointPainter.setWaypoints(waypoints);
     }
 
     public void addRectangle(Color color){
