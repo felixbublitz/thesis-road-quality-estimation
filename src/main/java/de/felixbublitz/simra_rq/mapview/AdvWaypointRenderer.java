@@ -1,10 +1,9 @@
-package de.felixbublitz.simra_rq;
+package de.felixbublitz.simra_rq.mapview;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.jxmapviewer.JXMapViewer;
 import org.jxmapviewer.viewer.DefaultWaypointRenderer;
-import org.jxmapviewer.viewer.Waypoint;
 import org.jxmapviewer.viewer.WaypointRenderer;
 
 import javax.imageio.ImageIO;

@@ -1,4 +1,4 @@
-package de.felixbublitz.simra_rq;
+package de.felixbublitz.simra_rq.mapview;
 
 import org.jxmapviewer.viewer.DefaultWaypoint;
 import org.jxmapviewer.viewer.GeoPosition;

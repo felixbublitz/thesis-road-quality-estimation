@@ -1,6 +1,7 @@
-package de.felixbublitz.simra_rq;
+package de.felixbublitz.simra_rq.quality_index;
 
 import de.felixbublitz.simra_rq.database.Database;
+import de.felixbublitz.simra_rq.quality_index.QualityIndex;
 import javafx.util.Pair;
 
 public class DynamicQualityIndex implements QualityIndex {
@@ -15,7 +16,9 @@ public class DynamicQualityIndex implements QualityIndex {
     }
 
     @Override
-    public double getQuality(double value) {
+    public Double getQuality(Double value) {
+        if(value == null)
+            return null;
         double score = Math.min(1.0, Math.max(0.0, (double)(maxVariance- value )/(maxVariance-minVariance)));
         return Math.min(1.0, Math.max(0.0, (double)(maxVariance- value )/(maxVariance-minVariance)));
     }

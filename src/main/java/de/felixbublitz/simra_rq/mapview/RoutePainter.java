@@ -1,4 +1,4 @@
-package de.felixbublitz.simra_rq;
+package de.felixbublitz.simra_rq.mapview;
 
 import java.awt.BasicStroke;
 import java.awt.Color;

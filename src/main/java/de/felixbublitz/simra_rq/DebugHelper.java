@@ -1,5 +1,8 @@
 package de.felixbublitz.simra_rq;
 
+import de.felixbublitz.simra_rq.mapview.AdvWaipoint;
+import de.felixbublitz.simra_rq.mapview.AdvWaypointRenderer;
+import de.felixbublitz.simra_rq.mapview.RoutePainter;
 import de.felixbublitz.simra_rq.quality.DataSegment;
 import de.felixbublitz.simra_rq.simra.GPSData;
 import de.felixbublitz.simra_rq.simra.SimraData;
@@ -16,7 +19,6 @@ import org.knowm.xchart.XYSeries;
 import javax.swing.*;
 import java.awt.*;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashSet;
 import java.util.stream.Stream;
 
