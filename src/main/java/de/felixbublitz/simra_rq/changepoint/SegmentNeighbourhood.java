@@ -8,8 +8,8 @@ public class SegmentNeighbourhood extends ChangepointAlgorithm {
     private int kMax;
     private ArrayList<ArrayList<Pair<Integer, Double>>> c;
 
-    public SegmentNeighbourhood(double penalty, int kMax) {
-        super(penalty);
+    public SegmentNeighbourhood(double penalty, int kMax, double penaltyFactor) {
+        super(penalty, penaltyFactor);
         this.kMax = kMax;
     }
 

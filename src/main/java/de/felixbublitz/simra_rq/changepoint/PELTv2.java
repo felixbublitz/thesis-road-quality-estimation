@@ -13,8 +13,8 @@ public class PELTv2 extends ChangepointAlgorithm {
     double K;
     int addcount = 0;
 
-    public PELTv2(double penaltyFactor) {
-        super(penaltyFactor);
+    public PELTv2(double penalty, double samplingRate) {
+        super(penalty, samplingRate);
     }
 
     @Override

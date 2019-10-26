@@ -3,6 +3,7 @@ package de.felixbublitz.simra_rq.track;
 import de.felixbublitz.simra_rq.DebugHelper;
 import de.felixbublitz.simra_rq.database.Database;
 import de.felixbublitz.simra_rq.simra.GPSData;
+import de.felixbublitz.simra_rq.simra.SimraData;
 import org.json.JSONArray;
 
 import java.io.IOException;
@@ -19,37 +20,36 @@ public class Road {
     private int id;
     private String name;
     private String district;
-    private int length;
+    private RoadGeometry geometry;
 
-    public int getId() {
-        return id;
-    }
-
-    private ArrayList<GPSData> nodes;
-
-    private final int MAX_ROAD_ANGLE =90;
-
-    private final String API_SEARCH = "http://localhost/nominatim/search?";
-
-
-    public Road(int id, String name, String district, int length, ArrayList<GPSData> nodes) {
+    public Road(int id, String name, String district, int length, RoadGeometry genometry) {
         this.id = id;
         this.name = name;
         this.district = district;
-        this.length = length;
-        this.nodes = nodes;
-    }
+        this.geometry = genometry;
 
+        if(DebugHelper.DEBUG_ROADS)
+            DebugHelper.showOnMap(this);
+    }
+    public Road(int id, String name, String district, int length, ArrayList<RoadPath> roadPaths) {
+        this.id = id;
+        this.name = name;
+        this.district = district;
+        this.geometry = new RoadGeometry(this, roadPaths);
+
+        if(DebugHelper.DEBUG_ROADS)
+            DebugHelper.showOnMap(this);
+    }
     public Road(Database db, String name, String district){
         this.name = name;
         this.district = district;
-        this.nodes = resolveNodes();
-        this.length = getLengt();
+        this.geometry = new RoadGeometry(this);
         this.id = db.addRoad(this);
 
-        DebugHelper.showOnMap(this);
+        if(DebugHelper.DEBUG_ROADS)
+            DebugHelper.showOnMap(this);
 
-        System.out.println("Road " + name + " initiated: " + length + " Meter");
+        System.out.println("Road " + name + " initiated: " + getLength() + " Meter");
 
 
 
@@ -72,18 +72,38 @@ public class Road {
 
     }
 
-    public int getLength(){
-        return length;
+    public int getId() {
+        return id;
+    }
+    public Integer getPosition(GPSData gps){
+        return geometry.getPosition(gps);
+    }
+    public RoadPath getPath(Integer start, Integer end){
+        return geometry.getPath(start, end);
+    }
+    public RoadPath getPath(SimraData sd, Integer i){
+        Integer pos = geometry.getPosition(sd.getGPSData(i, true));
+        if(pos == null)
+            return null;
+        return geometry.getPath(pos);
     }
 
+
+    public int getLength(){
+        return geometry.getLength();
+    }
+    public GPSData getGPSPoint(int position){
+        return geometry.getGPSPoint(position);
+    }
     public String getName(){
         return name;
     }
-
     public String getDistrict(){
         return district;
     }
-
+    public RoadGeometry getRoadGeometry(){
+        return geometry;
+    }
    /* public int getPosition(GPSData px){
         double shortest_dist = Integer.MAX_VALUE;
         double len = -1;
@@ -144,328 +164,4 @@ public class Road {
     };*/
 
 
-
-
-    private int getLengt(){
-        int len = 0;
-        for(int i =0; i<nodes.size()-1;i++){
-            len+=nodes.get(i).getDistanceTo(nodes.get(i+1));
-        }
-
-        return (int)Math.round(len*0.1)*10;
-    };
-
-
-
-    public ArrayList<GPSData> getNodes(){
-        return nodes;
-    }
-
-    public ArrayList<GPSData> getNodes(int start, int end){
-        double pos = 0;
-        ArrayList<GPSData> out = new ArrayList<GPSData>();
-
-        if(pos >= start && pos <= end){
-            out.add(nodes.get(0));
-        }
-        for(int i=0;i<nodes.size()-1;i++){
-            pos += nodes.get(i).getDistanceTo(nodes.get(i+1));
-            if(pos >= start && pos <= end){
-                out.add(nodes.get(i));
-            }
-        }
-
-        return nodes;
-    }
-
-    public int getPosition(GPSData px) {
-        double prevDist = Integer.MAX_VALUE;
-        double nextDist = Integer.MAX_VALUE;
-
-        double position = 0;
-        int prev = 0;
-        int next = 0;
-        double tmp=0;
-
-        for (int i = 0; i < nodes.size(); i++) {
-            if (px.getDistanceTo(nodes.get(i)) < prevDist) {
-                prevDist = px.getDistanceTo(nodes.get(i));
-                prev = i;
-                position = tmp;
-            }
-            if(i != nodes.size()-1)
-            tmp+=nodes.get(i).getDistanceTo(nodes.get(i+1));
-        }
-
-        for(int i=0;i<nodes.size(); i++){
-            if (px.getDistanceTo(nodes.get(i)) < nextDist && getAngle(nodes.get(i), px, nodes.get(prev)) < 90 && i != prev) {
-                nextDist = px.getDistanceTo(nodes.get(i));
-                next = i;
-            }
-        }
-
-       // DebugHelper.showOnMap(nodes.get(prev), px);
-
-        double dist = prevDist + nextDist;
-        double nodeDist = nodes.get(prev).getDistanceTo(nodes.get(next));
-        double progress = prevDist/dist;
-
-        if(prev < next){
-           // progress *=-1;
-        }
-
-        DebugHelper.showOnMap(px, getGPSPoint((int)(position+ progress*dist)));
-
-        return (int)(position + progress*dist);
-    }
-
-
-    public GPSData getGPSPoint(int position){
-
-        double pos = 0;
-        ArrayList<GPSData> out = new ArrayList<GPSData>();
-        double minDist =  Integer.MAX_VALUE;
-        int best =  0;
-        int secondeBest = 0;
-        double secondBestDist =0;
-        double bestPos = 0;
-
-        for(int i=0;i<nodes.size();i++){
-            double dist = Math.abs(pos-position);
-            if(dist < minDist){
-                best = i;
-                bestPos = pos;
-                minDist = dist;
-            }
-            if(i< nodes.size()-1)
-            pos += nodes.get(i).getDistanceTo(nodes.get(i+1));
-        }
-
-        if( bestPos < position){
-            secondeBest = Math.min(nodes.size()-1,best+1);
-        }else{
-            secondeBest = Math.max(0,best-1);
-        }
-
-        for(int i=1;i<nodes.size();i++){
-            secondBestDist += nodes.get(i).getDistanceTo(nodes.get(i-1));
-           if(i >= secondeBest){
-               break;
-           }
-        }
-        secondBestDist = Math.abs(secondBestDist-position);
-
-        System.out.println(position);
-        System.out.println(length);
-        double dist = minDist + secondBestDist;
-        double latDist =  nodes.get(secondeBest).getLatitude() - nodes.get(best).getLatitude();
-        double lonDist = nodes.get(secondeBest).getLongitude() - nodes.get(best).getLongitude();
-
-        double progress = minDist/dist;
-
-
-        return new GPSData(nodes.get(best).getLatitude() + progress*latDist, nodes.get(best).getLongitude() + progress * lonDist);
-
-    }
-
-
-    private ArrayList<GPSData> resolveNodes(){
-        return unwrapNodeGroups(getNodesFromNominatim());
-    }
-
-
-    private ArrayList<GPSData> unwrapNodeGroups(ArrayList<ArrayList<GPSData>> groups){
-        int longestItem = 0;
-        int longestLength = 0;
-
-
-        //get longest Segment
-        for(int i=0; i<groups.size();i++){
-            int len = getSegmentLength(groups.get(i));
-            if(len > longestLength){
-                longestItem = i;
-                longestLength = len;
-            }
-        }
-
-        //bring element to front
-        ArrayList<GPSData> groups_out = groups.remove(longestItem);
-        boolean appendableGroupsExists = true;
-
-        while(appendableGroupsExists) {
-            appendableGroupsExists = false;
-
-            for (int i = 0; i < groups.size(); i++) {
-                ArrayList<GPSData> new_group = appendGroup(groups_out, groups.get(i));
-                if (new_group != null) {
-                    groups_out = new_group;
-                    groups.remove(i);
-                    appendableGroupsExists = true;
-                    break;
-                }
-            }
-
-
-        }
-
-        return groups_out;
-
-    }
-
-    private ArrayList<GPSData> appendGroup(ArrayList<GPSData> g1, ArrayList<GPSData> g2){
-
-        ArrayList<GPSData> out = new ArrayList<GPSData>();
-
-        if(name.equals("Lützowufer")){
-            int c = 2;
-        }
-
-        if(g1.get(0).getDistanceTo(g2.get(0)) == 0 && getAngle(g1.get(1), g1.get(0), g2.get(1)) < MAX_ROAD_ANGLE ) {
-            Collections.reverse(g1);
-            out.addAll(g1);
-            out.remove(out.size() - 1);
-            out.addAll(g2);
-            return out;
-        }
-        if(g1.get(0).getDistanceTo(g2.get(g2.size()-1)) == 0  && getAngle(g1.get(1), g1.get(0), g2.get(g2.size()-2)) < MAX_ROAD_ANGLE) {
-            out.addAll(g2);
-            out.remove(g2.size() - 1);
-            out.addAll(g1);
-            return out;
-        }
-        if(g1.get(g1.size()-1).getDistanceTo(g2.get(0)) == 0  && getAngle(g1.get(g1.size()-2), g2.get(0), g2.get(1)) < MAX_ROAD_ANGLE) {
-            out.addAll(g1);
-            out.remove(out.size()-1);
-            out.addAll(g2);
-            return out;
-        }
-        if(g1.get(g1.size()-1).getDistanceTo(g2.get(g2.size()-1)) == 0  && getAngle(g1.get(g1.size()-2),g1.get(g1.size()-1),g2.get(g2.size()-2)) < MAX_ROAD_ANGLE) {
-            out.addAll(g1);
-            Collections.reverse(g2);
-            out.remove(out.size()-1);
-            out.addAll(g2);
-            return out;
-        }
-
-        return null;
-
-    }
-
-
-    private int getSegmentLength(ArrayList<GPSData> segment){
-        int len = 0;
-        for(int i=0; i<segment.size()-1;i++){
-            len += segment.get(i).getDistanceTo(segment.get(i+1));
-        }
-
-        return len;
-    }
-
-    private float getAngle(GPSData g1, GPSData g2,  GPSData g3){
-        float degree = Math.abs((float)Math.toDegrees(Math.atan2(g3.getLongitude() - g2.getLongitude(), g3.getLatitude() - g2.getLatitude()) - Math.atan2(g1.getLongitude() - g2.getLongitude(), g1.getLatitude() - g2.getLatitude())));
-
-        if(name.equals("Lützowufer"))
-            System.out.println(degree);
-
-        return Math.abs(degree-180);
-    }
-
-    private ArrayList<ArrayList<GPSData>> getNodesFromNominatim(){
-        int tries = 0;
-        while (tries <= 20) {
-            tries++;
-            try {
-                HttpClient client = HttpClient.newHttpClient();
-                HttpResponse<String> response = null;
-
-                String[] parameters = {"street=" + name,
-                        "city=" + district,
-                        "addressdetails=1",
-                        "dedupe=0",
-                        "polygon_geojson=1",
-                        "limit=50",
-                        "format=jsonv2"
-                };
-
-                int c = 2;
-                response = client.send(
-                        HttpRequest
-                                .newBuilder(new URI(API_SEARCH + String.join("&", parameters).replace(" ", "%20")))
-                                .GET()
-                                .build(),
-                        HttpResponse.BodyHandlers.ofString()
-                );
-                int statusCode = response.statusCode();
-
-
-                if (statusCode == 500) {
-                    TimeUnit.MILLISECONDS.sleep(100);
-                    continue;
-                }
-
-                if (statusCode != 200)
-                    return null;
-
-
-                JSONArray json = new JSONArray(response.body());
-                ArrayList<ArrayList<GPSData>> rawNodes = new ArrayList<ArrayList<GPSData>>();
-
-
-                for (int i = 0; i < json.length(); i++) {
-                    if (json.getJSONObject(i).getJSONObject("address").has("road") && json.getJSONObject(i).getJSONObject("address").getString("road").equals(name) &&
-                            !json.getJSONObject(i).getJSONObject("address").has("suburb") ||
-                            json.getJSONObject(i).getJSONObject("address").getString("suburb").equals(district) &&
-                                    (!json.getJSONObject(i).has("category") ||
-                                            !json.getJSONObject(i).getString("category").equals("railway")) &&
-                                    (!json.getJSONObject(i).has("type") ||
-                                            (json.getJSONObject(i).getString("type").equals("tertiary") ||
-                                                    json.getJSONObject(i).getString("type").equals("primary") ||
-                                                    json.getJSONObject(i).getString("type").equals("residential") ||
-                                                    json.getJSONObject(i).getString("type").equals("trunk") ||
-                                                    json.getJSONObject(i).getString("type").equals("secondary") ||
-                                                    json.getJSONObject(i).getString("type").equals("service")||
-                                                    json.getJSONObject(i).getString("type").equals("living_street")||
-                    json.getJSONObject(i).getString("type").equals("unclassified")
-
-                                            ))) {
-
-                        JSONArray nodes = json.getJSONObject(i).getJSONObject("geojson").getJSONArray("coordinates");
-
-                        if (!(nodes.get(0) instanceof JSONArray)) {
-                            JSONArray newNodes = new JSONArray();
-                            newNodes.put(nodes);
-                            nodes = newNodes;
-                        }
-
-                        if (nodes.getJSONArray(0).get(0) instanceof JSONArray) {
-                            nodes = nodes.getJSONArray(0);
-                        }
-
-
-                        ArrayList<GPSData> group = new ArrayList<GPSData>();
-                        for (int j = 0; j < nodes.length(); j++) {
-                            try {
-                                GPSData gps = new GPSData(nodes.getJSONArray(j).getDouble(1), nodes.getJSONArray(j).getDouble(0));
-                                group.add(gps);
-                            } catch (Exception e) {
-                                int a = 2;
-                            }
-
-                        }
-                        rawNodes.add(group);
-                    }
-                }
-
-                return rawNodes;
-            } catch (IOException e) {
-                e.printStackTrace();
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-            } catch (URISyntaxException e) {
-                e.printStackTrace();
-            }
-            return null;
-        }
-        return null;
-    }
 }

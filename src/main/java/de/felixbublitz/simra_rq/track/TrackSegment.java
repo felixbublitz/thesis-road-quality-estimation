@@ -5,25 +5,38 @@ import de.felixbublitz.simra_rq.simra.GPSData;
 import de.felixbublitz.simra_rq.simra.SimraData;
 import de.felixbublitz.simra_rq.track.Road;
 
+import java.io.InvalidObjectException;
+import java.lang.reflect.Array;
 import java.util.ArrayList;
 
 public class TrackSegment {
     private Road road;
     private int startX;
     private int endX;
-    private int startPosition;
-    private int endPosition;
+    private Integer startPosition;
+    private Integer endPosition;
+    private RoadPath roadPath;
     private SimraData data;
-
 
     public TrackSegment(Road road, SimraData data, int start, int end){
         this.road = road;
         this.startX = start;
         this.endX = end;
-        this.getPositions(data);
+        this.roadPath = road.getPath(data, end);
+        if(isValid()) {
+            this.getPositions(data);
+        }
     }
 
+    public boolean isValid(){
+       return roadPath == null ? false:true;
+    }
+
+
+
     public int getLength(){
+        if(startPosition == null || endPosition == null)
+            return 0;
         return Math.abs(startPosition-endPosition);
     }
 
@@ -31,26 +44,33 @@ public class TrackSegment {
         return road;
     }
 
+
+    public RoadPath getRoadPath(){
+        return roadPath;
+    }
+    public RoadPath getTrackPath(){
+        return roadPath.getIntersection(startPosition,endPosition);
+    }
+
+
     private void getPositions(SimraData data){
         if(endX <= startX){
-            return;
+             return;
         }
-        startPosition = road.getPosition(data.getGPSData(startX, true));
-        endPosition = road.getPosition(data.getGPSData(endX, true));
+
+        startPosition = roadPath.getPosition(data.getGPSData(startX, true));
+        endPosition = roadPath.getPosition(data.getGPSData(endX, true));
 
     }
 
-    public int getStartPosition(){
+    public Integer getStartPosition(){
         return startPosition;
     }
 
-    public int getEndPosition(){
+    public Integer getEndPosition(){
         return endPosition;
     }
 
-    public ArrayList<GPSData> getNodes(){
-        return road.getNodes(startPosition, endPosition);
-    }
 
     public int getStart(){
         return startX;

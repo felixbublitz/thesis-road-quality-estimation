@@ -13,9 +13,11 @@ public abstract class ChangepointAlgorithm {
     protected List<Double> variances;
     private double penaltyFactor;
     protected ArrayList<Double> data;
+    private double samplingRate;
 
-    public ChangepointAlgorithm(double penaltyFactor){
+    public ChangepointAlgorithm(double penaltyFactor, double samplingRate){
         this.penaltyFactor = penaltyFactor;
+        this.samplingRate = samplingRate;
     }
 
     public ArrayList<Integer> getChangepoints(ArrayList<Double> data){
@@ -40,7 +42,7 @@ public abstract class ChangepointAlgorithm {
     }
 
     protected double getPenalty(){
-        return penaltyFactor * ListOperation.getVariance(data)*Math.log(data.size());
+        return (1/samplingRate) * penaltyFactor ;
     }
 
 
@@ -84,10 +86,11 @@ public abstract class ChangepointAlgorithm {
         double mu = ListOperation.getMean(data.subList(s, t));
         double var = ListOperation.getVariance(data.subList(s, t));
 
+
         for (int i = s; i < t; i++) {
             double p1 = Math.abs(data.get(i) - mu);
-            double p2 = Math.abs(var);
-            sum +=0.08*Math.abs(p1-p2);
+            double p2 = Math.sqrt(var);
+            sum +=Math.abs(p1-p2);
         }
 
         if(var == 0){
@@ -95,7 +98,7 @@ public abstract class ChangepointAlgorithm {
         }
 
 
-      //  sum = sum/var;
+        sum = sum/Math.sqrt(var);
 
         return sum;
     }

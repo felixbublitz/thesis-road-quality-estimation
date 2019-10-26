@@ -1,6 +1,9 @@
 package de.felixbublitz.simra_rq.database;
+import de.felixbublitz.simra_rq.changepoint.Tuple;
 import de.felixbublitz.simra_rq.simra.GPSData;
 import de.felixbublitz.simra_rq.track.Road;
+import de.felixbublitz.simra_rq.track.RoadNode;
+import de.felixbublitz.simra_rq.track.RoadPath;
 import javafx.util.Pair;
 
 import java.sql.*;
@@ -124,13 +127,26 @@ public class Database {
         return false;
     }
 
-    private ArrayList<GPSData> getRodeNodes(int roadID){
-        DBQuery d = new DBQuery(connection).select("Road_Nodes").cells("id", "latitude", "longitude").where("road_id", String.valueOf(roadID));
+    private ArrayList<RoadPath> getRoadPaths(int roadID){
+        DBQuery d = new DBQuery(connection).select("Road_Nodes").cells("id", "path_id", "latitude", "longitude").where("road_id", String.valueOf(roadID));
         ArrayList<HashMap<String, String>> results = d.getResult();
-        ArrayList<GPSData> out = new ArrayList<>();
+        ArrayList<RoadPath> out = new ArrayList<>();
+        ArrayList<GPSData> nodes = new ArrayList<>();
+        RoadPath curr;
+        int lastPathId = 0;
+
         for(HashMap<String, String> r : results){
-            out.add(new GPSData(Double.parseDouble(r.get("latitude")), Double.parseDouble(r.get("longitude"))));
+            GPSData currNode = new GPSData(Double.parseDouble(r.get("latitude")), Double.parseDouble(r.get("longitude")));
+            int currPathId = Integer.parseInt(r.get("path_id"));
+            if(nodes.size() != 0 && currPathId != lastPathId){
+                lastPathId = currPathId;
+                out.add(new RoadPath(nodes));
+                nodes.clear();
+            }
+            nodes.add(currNode);
         }
+        if(nodes.size() != 0)
+            out.add(new RoadPath(nodes));
 
         return out;
     }
@@ -155,6 +171,19 @@ public class Database {
         return out;
     }
 
+
+    public Pair getQualityIndex(String identifier){
+        DBQuery d =  new DBQuery(connection).select("QI_" + identifier).cells("maxV", "minV");
+        ArrayList<HashMap<String, String>> result = d.getResult();
+        if(result.size() == 0)
+            return null;
+        HashMap<String, String>  r =result.get(0);
+
+
+        return new Pair(Double.parseDouble(r.get("minV")), Double.parseDouble(r.get("maxV")));
+
+    }
+
     public Road getRoad(String name, String district){
         DBQuery d =  new DBQuery(connection).select("roads").cells("id", "name", "district", "length").where("name", name).where("district", district);
         ArrayList<HashMap<String, String>> result = d.getResult();
@@ -162,7 +191,7 @@ public class Database {
             return null;
         HashMap<String, String>  r =result.get(0);
 
-        Road road = new Road(Integer.parseInt(r.get("id")), r.get("name"),  r.get("district"),  Integer.parseInt(r.get("length")), getRodeNodes(Integer.parseInt(r.get("id"))));
+        Road road = new Road(Integer.parseInt(r.get("id")), r.get("name"),  r.get("district"),  Integer.parseInt(r.get("length")), getRoadPaths(Integer.parseInt(r.get("id"))));
         return road;
     }
 
@@ -170,9 +199,16 @@ public class Database {
         DBQuery d = new DBQuery(connection).insert("Roads").cell("name", r.getName()).cell("district", r.getDistrict()).cell("length", String.valueOf(r.getLength()));
         int roadID = d.query();
 
-        for(GPSData node : r.getNodes()){
-            DBQuery dn = new DBQuery(connection).insert("Road_Nodes").cell("road_id", roadID).cell("latitude", node.getLatitude()).cell("longitude", node.getLongitude());
-            dn.query();
+        ArrayList<RoadPath> paths = r.getRoadGeometry().getPaths();
+        for(int i=0; i< paths.size(); i++){
+            for(RoadNode node : paths.get(i).getNodes()){
+                DBQuery dn = new DBQuery(connection).insert("Road_Nodes");
+                dn.cell("road_id", roadID);
+                dn.cell("path_id", i);
+                dn.cell("latitude", node.getGPSData().getLatitude());
+                dn.cell("longitude", node.getGPSData().getLongitude());
+                dn.query();
+            }
         }
 
         return roadID;
@@ -186,7 +222,7 @@ public class Database {
         ArrayList<Road> out = new ArrayList<>();
 
         for(HashMap<String, String> r : results) {
-            out.add(new Road(Integer.parseInt(r.get("id")), r.get("name"),  r.get("district"),  Integer.parseInt(r.get("length")), getRodeNodes(Integer.parseInt(r.get("id")))));
+            out.add(new Road(Integer.parseInt(r.get("id")), r.get("name"),  r.get("district"),  Integer.parseInt(r.get("length")), getRoadPaths(Integer.parseInt(r.get("id")))));
         }
 
         return out;

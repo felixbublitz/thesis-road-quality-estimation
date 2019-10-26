@@ -9,8 +9,8 @@ public class OptimalPartitioning extends ChangepointAlgorithm {
     ArrayList<Double> F;
 
 
-    public OptimalPartitioning(double penalty) {
-        super(penalty);
+    public OptimalPartitioning(double penalty, double samplingRate) {
+        super(penalty, samplingRate);
     }
 
     @Override

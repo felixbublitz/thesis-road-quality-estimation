@@ -15,6 +15,8 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeUnit;
 
 
 public class Track {
@@ -57,7 +59,6 @@ public class Track {
     public ArrayList<TrackSegment> getSegments(){
         return segments;
     }
-
     public TrackSegment getSegment(int x){
         for(TrackSegment s : segments){
             if(s.getStart() <= x && s.getEnd() >= x)
@@ -65,7 +66,6 @@ public class Track {
         }
         return null;
     }
-
     private void cleanTrack(){
 
         List<TrackSegment> processedSegments = new ArrayList<TrackSegment>();
@@ -75,37 +75,45 @@ public class Track {
 
         for(int i=0; i<segments.size();i++){
             Road r = segments.get(i).getRoad();
-            if(recorededLen.containsKey(r))
+            if(recorededLen.containsKey(r)) {
                 recorededLen.replace(r, recorededLen.get(r) + segments.get(i).getLength());
-            recorededLen.put(r, segments.get(i).getLength());
+            }else {
+                recorededLen.put(r, segments.get(i).getLength());
+            }
         }
 
         ArrayList<TrackSegment> cleanedList = new ArrayList<TrackSegment>();
 
         for(int i=0; i<segments.size();i++){
             Road r = segments.get(i).getRoad();
-            if(recorededLen.get(r) >= MIN_SEGMENT_DISTANCE)
+            if(recorededLen.get(r) >= MIN_SEGMENT_DISTANCE && segments.get(i).getStartPosition() != null && segments.get(i).getEndPosition() != null)
                 cleanedList.add(segments.get(i));
         }
 
         int i=0;
 
-        while(i<cleanedList.size()-1){
-            TrackSegment s1 = cleanedList.get(i);
-            TrackSegment s2 = cleanedList.get(i+1);
-            if(s1.getRoad() == s2.getRoad()){
-                cleanedList.set(i+1, new TrackSegment(s1.getRoad(),sd, s1.getStart(), s2.getEnd()));
-                i++;
-            }else{
-                out.add(s1);
-                i++;
-            }
+        ArrayList<TrackSegment> cleanedList2 = new ArrayList<TrackSegment>();
+        TrackSegment lastSegment = cleanedList.get(0);
+
+        for(i=1;i<cleanedList.size(); i++){
+            TrackSegment current = cleanedList.get(i);
+
+          if(lastSegment.getRoad() == current.getRoad() && lastSegment.getRoadPath() == current.getRoadPath()){
+              TrackSegment newSegment = new TrackSegment(current.getRoad(), sd, lastSegment.getStart(), current.getEnd());
+              if(!newSegment.isValid())
+                  throw new IllegalStateException("Something is wrong with the segments");
+              lastSegment = newSegment;
+          }else{
+              cleanedList2.add(lastSegment);
+              lastSegment = current;
+          }
         }
 
-        segments = out;
+        cleanedList2.add(lastSegment);
+
+        segments = cleanedList2;
 
     }
-
     private TrackSegment getSegment(Road r){
         for(TrackSegment ts : segments){
             if(ts.getRoad() == r)
@@ -113,25 +121,20 @@ public class Track {
         }
         return null;
     }
-
     private TrackSegment getLastSegment(){
         if(segments.size() == 0)
             return null;
 
         return segments.get(segments.size()-1);
     }
-
     private void addRoadToTrack(Road road, int i){
         TrackSegment ts = getLastSegment();
-        if(ts != null && ts.getRoad() == road){
+        if(ts != null && ts.getRoad() == road && (ts.getEndPosition() == null  || ts.getRoad().getPosition(sd.getGPSData(i, true) )==null ||  Math.abs(ts.getEndPosition() - ts.getRoad().getPosition(sd.getGPSData(i, true))) <= 30 )){
             segments.set(segments.indexOf(ts), new TrackSegment(road,sd, ts.getStart(), i));
         }else{
             segments.add(new TrackSegment(road,sd, i,i));
         }
     }
-
-
-
     private Road getRoad(String name, String district){
 
         Road r;
@@ -151,10 +154,9 @@ public class Track {
         return r;
 
     }
-
     private Map<String, String> getRoadIdentifier(GPSData gps) {
         int tries = 0;
-        while (tries <= 3) {
+        while (tries <= 20) {
             tries++;
             try {
                 HttpClient client = HttpClient.newHttpClient();
@@ -175,12 +177,13 @@ public class Track {
                 int statusCode = response.statusCode();
 
                 if (statusCode == 500) {
+                    TimeUnit.MILLISECONDS.sleep(200);
                     continue;
                 }
 
 
                 if (statusCode != 200)
-                    return null;
+                    throw new IllegalStateException("API request error: " + statusCode);
 
                 JSONObject json = new JSONObject(response.body());
 
@@ -221,7 +224,7 @@ public class Track {
 
         }
 
-        return null;
+        throw new IllegalStateException("API not available");
     }
 
 }

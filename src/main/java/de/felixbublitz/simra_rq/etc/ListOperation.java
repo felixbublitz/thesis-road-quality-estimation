@@ -24,10 +24,10 @@ public class ListOperation {
     }
 
 
-    public static double getSum(List<Double> data){
+    public static double getSum(List data){
         double sum = 0;
-        for(Double d : data)
-            sum += d;
+        for(Object d : data)
+            sum += Double.valueOf(String.valueOf(d));
         return sum;
     }
 

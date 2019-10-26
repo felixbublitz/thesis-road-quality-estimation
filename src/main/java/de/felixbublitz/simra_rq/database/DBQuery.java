@@ -2,10 +2,7 @@ package de.felixbublitz.simra_rq.database;
 
 import javafx.util.Pair;
 
-import java.sql.Connection;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.sql.Statement;
+import java.sql.*;
 import java.util.ArrayList;
 import java.util.HashMap;
 
@@ -70,10 +67,11 @@ public class DBQuery {
     private ArrayList<HashMap<String, String>> formatResult(ResultSet rs) {
         try {
             ArrayList<HashMap<String, String>> out = new ArrayList<HashMap<String, String>>();
+            ResultSetMetaData rsm = rs.getMetaData();
             while (rs.next()) {
                 HashMap h = new HashMap();
                 for (String a : cells) {
-                    h.put(a, rs.getString(a));
+                    h.put(a, String.valueOf(rs.getObject(a)));
                 }
                 out.add(h);
             }
@@ -107,7 +105,8 @@ public class DBQuery {
     };
 
     private String getSelectRequest(){
-        return "SELECT "+ String.join(", ", cells) + " FROM "+ table + " WHERE " + String.join(" and ", where);
+        return "SELECT "+ String.join(", ", cells) + " FROM "+ table +
+                (where.size() == 0 ? "" : " WHERE ") + String.join(" and ", where);
     }
 
     private String getInsertRequest(){

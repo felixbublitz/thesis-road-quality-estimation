@@ -8,8 +8,8 @@ import java.util.ArrayList;
 public class SegmentDetection {
 
 
-    public static ArrayList<DataSegment> getSegments(ArrayList<Double> data){
-       return getSegments(data,  new PELT(1));
+    public static ArrayList<DataSegment> getSegments(ArrayList<Double> data, double samplingRate){
+       return getSegments(data,  new PELT(1, samplingRate));
     }
 
     public static ArrayList<DataSegment> getSegments(ArrayList<Double> data, ChangepointAlgorithm algo){

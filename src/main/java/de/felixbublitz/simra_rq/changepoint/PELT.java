@@ -8,8 +8,8 @@ public class PELT extends ChangepointAlgorithm {
     ArrayList<CPCandidate> changePointCandidates;
     double k;
 
-    public PELT(double penalty) {
-        super(penalty);
+    public PELT(double penalty, double samplingRate) {
+        super(penalty, samplingRate);
     }
 
     @Override

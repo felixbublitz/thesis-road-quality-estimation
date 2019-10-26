@@ -19,7 +19,7 @@ class ChangepointAlgorithmTest {
     void getCosts() throws InterruptedException {
         SimraData dataset = new SimraData("/home/felix/Documents/SimRa/rides/ride-3.csv");
 
-        OptimalPartitioning o = new OptimalPartitioning(3.8);
+        OptimalPartitioning o = new OptimalPartitioning(3.8, dataset.getSamplingRate());
         o.data = dataset.getMagnitudes();
 
         int offset = 0;

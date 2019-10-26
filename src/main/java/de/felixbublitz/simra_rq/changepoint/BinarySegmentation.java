@@ -3,8 +3,8 @@ package de.felixbublitz.simra_rq.changepoint;
 import java.util.ArrayList;
 
 public class BinarySegmentation extends ChangepointAlgorithm {
-    public BinarySegmentation(double penalty) {
-        super(penalty);
+    public BinarySegmentation(double penalty, double samplingRate) {
+        super(penalty, samplingRate);
     }
 
     @Override

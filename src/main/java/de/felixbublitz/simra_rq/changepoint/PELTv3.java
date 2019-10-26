@@ -11,8 +11,8 @@ public class PELTv3 extends ChangepointAlgorithm{
     private ArrayList<Pair<Integer, Double>> optimal;
     double K;
 
-    public PELTv3(double penalty) {
-        super(penalty);
+    public PELTv3(double penalty, double samplingRate) {
+        super(penalty, samplingRate);
     }
 
     @Override
@@ -22,7 +22,7 @@ public class PELTv3 extends ChangepointAlgorithm{
         R = new HashMap<Integer, ArrayList<Integer>>();
         F = new ArrayList<>();
         F.add(-getPenalty());
-        K = getPenalty();
+        K = 0;
         ArrayList<Integer> r1 = new ArrayList<>();
         r1.add(0);
         R.put(1, r1);

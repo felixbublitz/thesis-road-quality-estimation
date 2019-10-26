@@ -3,9 +3,7 @@ package de.felixbublitz.simra_rq;
 import de.felixbublitz.simra_rq.quality.DataSegment;
 import de.felixbublitz.simra_rq.simra.GPSData;
 import de.felixbublitz.simra_rq.simra.SimraData;
-import de.felixbublitz.simra_rq.track.Road;
-import de.felixbublitz.simra_rq.track.Track;
-import de.felixbublitz.simra_rq.track.TrackSegment;
+import de.felixbublitz.simra_rq.track.*;
 import org.jxmapviewer.JXMapViewer;
 import org.jxmapviewer.OSMTileFactoryInfo;
 import org.jxmapviewer.painter.CompoundPainter;
@@ -24,12 +22,17 @@ import java.util.stream.Stream;
 
 public class DebugHelper {
 
-    private static final boolean DEBUG_ROADS = false;
-    private static final boolean DEBUG_ROADS_SEGMENTS = false;
+    public static final boolean DEBUG_ROADS = false;
+    public static final boolean DEBUG_ROADS_SEGMENTS = true;
 
-    private static final boolean DEBUG_SEGMENTS = false;
-    private static final boolean DEBUG_TRACK = false;
-    private static final boolean DEBUG_POS = false;
+    public static final boolean DEBUG_SEGMENTS = true;
+    public static final boolean DEBUG_TRACK = true;
+    public static final boolean DEBUG_POS = false;
+    public static final boolean DEBUG_ROADS_PATH = true;
+    public static final boolean DEBUG_GET_POSITION = true;
+
+
+
 
 
 
@@ -67,8 +70,7 @@ public class DebugHelper {
 
 
     public static void showOnMap(Road r){
-        if(!DEBUG_ROADS)
-            return;
+
         JXMapViewer mapViewer = new JXMapViewer();
 
         // Display the viewer in a JFrame
@@ -86,21 +88,110 @@ public class DebugHelper {
 
 
         // Create a track from the geo-positions
+        ArrayList l = new ArrayList();
         ArrayList<GeoPosition> track = new ArrayList<>();
 
+        ArrayList<GeoPosition> ctrack = new ArrayList<>();
 
-            for(GPSData g : r.getNodes()){
-                track.add(new GeoPosition(g.getLatitude(),g.getLongitude()));
+        Color[] colors = {Color.RED, Color.BLUE, Color.GREEN, Color.PINK, Color.BLACK, Color.ORANGE};
+
+        int i=0;
+        for(RoadPath p : r.getRoadGeometry().getPaths()){
+            track = new ArrayList<>();
+
+            for(RoadNode n: p.getNodes()){
+                ctrack.add(new GeoPosition(n.getGPSData().getLatitude(),n.getGPSData().getLongitude()));
+                track.add(new GeoPosition(n.getGPSData().getLatitude(),n.getGPSData().getLongitude()));
+
             }
+            RoutePainter routePainter = new RoutePainter(track, colors[i%colors.length], 2);
+            l.add(routePainter);
+            i++;
+        }
 
-
-        RoutePainter routePainter = new RoutePainter(track, Color.RED, 2);
 
         // Set the focus
-        mapViewer.zoomToBestFit(new HashSet<GeoPosition>(track), 1);
+        mapViewer.zoomToBestFit(new HashSet<GeoPosition>(ctrack), 1);
 
 
-        CompoundPainter<JXMapViewer> painter = new CompoundPainter<JXMapViewer>(routePainter);
+        CompoundPainter<JXMapViewer> painter = new CompoundPainter<JXMapViewer>(l);
+        mapViewer.setOverlayPainter(painter);
+
+    }
+
+    public static void showOnMap(TrackSegment t, SimraData sd){
+        if(!DEBUG_TRACK)
+            return;
+
+
+        JXMapViewer mapViewer = new JXMapViewer();
+
+        // Display the viewer in a JFrame
+        JFrame frame = new JFrame("JXMapviewer2 Example 2");
+        frame.getContentPane().add(mapViewer);
+        frame.setSize(3000, 1000);
+        frame.setDefaultCloseOperation(JFrame.HIDE_ON_CLOSE);
+        frame.setVisible(true);
+
+
+        // Create a TileFactoryInfo for OpenStreetMap
+        TileFactoryInfo info = new OSMTileFactoryInfo();
+        DefaultTileFactory tileFactory = new DefaultTileFactory(info);
+        mapViewer.setTileFactory(tileFactory);
+
+        ArrayList l = new ArrayList();
+
+        // Create a track from the geo-positions
+
+
+
+      /*  for(RoadPath p : t.getRoad().getRoadGeometry().getPaths()){
+            for(RoadNode n: p.getNodes()){
+                track.add(new GeoPosition(n.getGPSData().getLatitude(),n.getGPSData().getLongitude()));
+
+            }
+        }
+        RoutePainter routePainter = new RoutePainter(track, Color.GRAY, 6);
+        l.add(routePainter);*/
+
+        ArrayList<GeoPosition> cTrack = new ArrayList<>();
+        Color[] colors = {Color.RED, Color.BLUE, Color.GREEN, Color.PINK, Color.BLACK, Color.ORANGE};
+
+        int i=0;
+        RoadPath p = t.getTrackPath();
+        if(p== null)
+            return;
+
+            ArrayList<GeoPosition> track = new ArrayList<>();
+            for(RoadNode n: p.getNodes()){
+                track.add(new GeoPosition(n.getGPSData().getLatitude(),n.getGPSData().getLongitude()));
+                cTrack.add(new GeoPosition(n.getGPSData().getLatitude(),n.getGPSData().getLongitude()));
+
+            }
+            RoutePainter routePainter = new RoutePainter(track, colors[i%colors.length], 2);
+            l.add(routePainter);
+            i++;
+
+
+
+
+        track  = new ArrayList<>();
+        for(GPSData g : sd.getGPSData()){
+            if(g != null) {
+                track.add(new GeoPosition(g.getLatitude(), g.getLongitude()));
+            }
+
+        }
+        routePainter = new RoutePainter(track, Color.GREEN, 1);
+        l.add(routePainter);
+
+
+        // Set the focus
+        mapViewer.zoomToBestFit(new HashSet<GeoPosition>(cTrack), 1);
+
+
+
+        CompoundPainter<JXMapViewer> painter = new CompoundPainter<JXMapViewer>(l);
         mapViewer.setOverlayPainter(painter);
         while(frame.isVisible()) {
             try {
@@ -133,23 +224,107 @@ public class DebugHelper {
         mapViewer.setTileFactory(tileFactory);
 
 
-        // Create a track from the geo-positions
+        ArrayList l = new ArrayList();
         ArrayList<GeoPosition> track = new ArrayList<>();
 
+        ArrayList<GeoPosition> ctrack = new ArrayList<>();
 
-        for(GPSData g : r.getNodes()){
-            track.add(new GeoPosition(g.getLatitude(),g.getLongitude()));
+        Color[] colors = {Color.RED, Color.BLUE, Color.GREEN, Color.PINK, Color.BLACK, Color.ORANGE};
+
+        int i=0;
+        for(RoadPath p : r.getRoadGeometry().getPaths()){
+            track = new ArrayList<>();
+
+            for(RoadNode n: p.getNodes()){
+                ctrack.add(new GeoPosition(n.getGPSData().getLatitude(),n.getGPSData().getLongitude()));
+                track.add(new GeoPosition(n.getGPSData().getLatitude(),n.getGPSData().getLongitude()));
+
+            }
+            RoutePainter routePainter = new RoutePainter(track, colors[i%colors.length], 2);
+            l.add(routePainter);
+            i++;
         }
-        ArrayList l = new ArrayList();
+
+
         HashSet<Waypoint> waypoints = new HashSet<Waypoint>();
         HashSet<GeoPosition> geo =  new HashSet<GeoPosition>();
 
-        for(GPSData g : nodes) {
-            waypoints.add(new DefaultWaypoint(new GeoPosition(g.getLatitude(), g.getLongitude())));
+
+        for(i=0; i<nodes.length; i++) {
+            GPSData g = nodes[i];
+            waypoints.add(new AdvWaipoint(g.getLatitude(), g.getLongitude(), ""+i));
             geo.add(new GeoPosition(g.getLatitude(), g.getLongitude()));
         }
 
         WaypointPainter<Waypoint> waypointPainter = new WaypointPainter<Waypoint>();
+        WaypointRenderer a = new AdvWaypointRenderer();
+        waypointPainter.setRenderer(a);
+        waypointPainter.setWaypoints(waypoints);
+
+        RoutePainter routePainter = new RoutePainter(track, Color.RED, 2);
+
+        // Set the focus
+        mapViewer.zoomToBestFit(new HashSet<GeoPosition>(ctrack), 1);
+
+        l.add(waypointPainter);
+        l.add(routePainter);
+        CompoundPainter<JXMapViewer> painter = new CompoundPainter<JXMapViewer>(l);
+        mapViewer.setOverlayPainter(painter);
+        while(frame.isVisible()) {
+            try {
+                Thread.sleep(
+                        1000);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+        }
+
+    }
+
+
+
+    public static void showOnMap(RoadPath p, GPSData ... nodes){
+        if(!DEBUG_ROADS_PATH)
+            return;
+        JXMapViewer mapViewer = new JXMapViewer();
+
+        // Display the viewer in a JFrame
+        JFrame frame = new JFrame("JXMapviewer2 Example 2");
+        frame.getContentPane().add(mapViewer);
+        frame.setSize(3000, 1000);
+        frame.setDefaultCloseOperation(JFrame.HIDE_ON_CLOSE);
+        frame.setVisible(true);
+
+
+        // Create a TileFactoryInfo for OpenStreetMap
+        TileFactoryInfo info = new OSMTileFactoryInfo();
+        DefaultTileFactory tileFactory = new DefaultTileFactory(info);
+        mapViewer.setTileFactory(tileFactory);
+
+
+        // Create a track from the geo-positions
+        ArrayList<GeoPosition> track = new ArrayList<>();
+
+            for(RoadNode n: p.getNodes()){
+                track.add(new GeoPosition(n.getGPSData().getLatitude(),n.getGPSData().getLongitude()));
+
+            }
+
+
+        ArrayList l = new ArrayList();
+        HashSet<Waypoint> waypoints = new HashSet<Waypoint>();
+        HashSet<GeoPosition> geo =  new HashSet<GeoPosition>();
+
+        for(int i=0; i<nodes.length;i++) {
+            GPSData g = nodes[i];
+            waypoints.add(new AdvWaipoint(g.getLatitude(), g.getLongitude(), ""+i));
+            geo.add(new GeoPosition(g.getLatitude(), g.getLongitude()));
+        }
+
+        WaypointPainter<Waypoint> waypointPainter = new WaypointPainter<Waypoint>();
+        WaypointRenderer a = new AdvWaypointRenderer();
+        waypointPainter.setRenderer(a);
+
         waypointPainter.setWaypoints(waypoints);
 
 
@@ -249,14 +424,25 @@ public class DebugHelper {
             HashSet<Waypoint> waypoints = null;
 
             waypoints = new HashSet<Waypoint>();
-            ArrayList<GeoPosition> track = new ArrayList<>();
-            GPSData g1 = ts.getRoad().getGPSPoint(ts.getStartPosition());
-            GPSData g2 = ts.getRoad().getGPSPoint(ts.getEndPosition());
-            track.add(new GeoPosition(g1.getLatitude(),g1.getLongitude()));
-            track.add(new GeoPosition(g2.getLatitude(),g2.getLongitude()));
 
-            waypoints.add(new DefaultWaypoint(new GeoPosition(g1.getLatitude(), g1.getLongitude())));
-            waypoints.add(new DefaultWaypoint(new GeoPosition(g1.getLatitude(), g2.getLongitude())));
+
+            Color[] colors = {Color.RED, Color.BLUE, Color.GREEN, Color.PINK, Color.BLACK, Color.ORANGE};
+
+            int i=0;
+            RoadPath p = ts.getTrackPath();
+
+            if(p == null)
+                return;
+
+                ArrayList<GeoPosition> track = new ArrayList<>();
+                for(RoadNode n : p.getNodes()){
+                    track.add(new GeoPosition(n.getGPSData().getLatitude(),n.getGPSData().getLongitude()));
+                }
+                RoutePainter routePainter = new RoutePainter(track, colors[i%colors.length], 6);
+                l.add(routePainter);
+                i++;
+
+
 
 
            // ArrayList<GeoPosition> track = new ArrayList<>();
@@ -266,8 +452,7 @@ public class DebugHelper {
           //  RoutePainter routePainter = new RoutePainter(track, Color.RED, 4);
 
             //l.add(routePainter);
-            RoutePainter routePainter = new RoutePainter(track, Color.RED, 8);
-            l.add(routePainter);
+
          //   WaypointPainter<Waypoint> waypointPainter = new WaypointPainter<Waypoint>();
          //   waypointPainter.setWaypoints(waypoints);
         //    l.add(waypointPainter);
@@ -285,7 +470,7 @@ public class DebugHelper {
 
         }
         RoutePainter routePainter = new RoutePainter(track, Color.GREEN, 1);
-       // l.add(routePainter);
+        l.add(routePainter);
 
 
 
