@@ -1,7 +1,8 @@
 package de.felixbublitz.simra_rq.changepoint.implementation;
 
 import de.felixbublitz.simra_rq.changepoint.ChangepointAlgorithm;
-import javafx.util.Pair;
+import de.felixbublitz.simra_rq.etc.Pair;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 
@@ -12,7 +13,7 @@ import java.util.HashMap;
 public class PELT extends ChangepointAlgorithm {
     ArrayList<Double> F;
     HashMap<Integer, ArrayList<Integer>> R;
-    private ArrayList<Pair<Integer, Double>> optimal;
+    private ArrayList<Pair> optimal;
     double K;
 
     /**
@@ -40,12 +41,12 @@ public class PELT extends ChangepointAlgorithm {
         r1.add(0);
         R.put(1, r1);
 
-        optimal = new ArrayList<Pair<Integer, Double>>();
+        optimal = new ArrayList<Pair>();
         optimal.add(new Pair(0,-getPenalty()));
 
         for(int k=1; k<data.size();k++){
-            Pair<Integer,Double> curr_opt = getOptimal(k);
-            F.add(curr_opt.getValue());
+            Pair curr_opt = getOptimal(k);
+            F.add((double)curr_opt.getData2());
             optimal.add(curr_opt);
             R.put(k+1, getTaus(k));
         }
@@ -53,7 +54,7 @@ public class PELT extends ChangepointAlgorithm {
         int i = data.size()-1;
 
         while(i != 0){
-            int curr = optimal.get(i).getKey();
+            int curr = (int)optimal.get(i).getData1();
             changePoints.add(i);
             i=curr;
         }
@@ -85,7 +86,7 @@ public class PELT extends ChangepointAlgorithm {
      * @param k current point
      * @return best changepoint for k
      */
-    private Pair<Integer, Double> getOptimal(int k){
+    private Pair getOptimal(int k){
         double minCosts = Double.MAX_VALUE;
         Pair out = null;
 
@@ -93,7 +94,7 @@ public class PELT extends ChangepointAlgorithm {
             double currCosts = F.get(i) + getCosts(i+1,k) + getPenalty();
             if(currCosts < minCosts){
                 minCosts = currCosts;
-                out = new Pair<Integer,Double>(i, minCosts);
+                out = new Pair(i, minCosts);
             }
         }
         return out;

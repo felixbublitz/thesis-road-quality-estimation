@@ -1,5 +1,9 @@
 package de.felixbublitz.simra_rq.simra;
 
+/**
+ * representation of gyro data
+ */
+
 public class GyroData {
     private double x;
     private double y;

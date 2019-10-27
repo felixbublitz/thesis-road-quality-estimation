@@ -4,6 +4,10 @@ import org.apache.commons.math3.complex.Complex;
 
 import java.util.ArrayList;
 
+/**
+ * Methods to solve DFT and IDFT
+ */
+
 public class FourierTransform {
     private static final int THREAD_COUNT = 4;
 

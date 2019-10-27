@@ -1,7 +1,7 @@
 package de.felixbublitz.simra_rq.changepoint.implementation;
 
 import de.felixbublitz.simra_rq.changepoint.ChangepointAlgorithm;
-import javafx.util.Pair;
+import de.felixbublitz.simra_rq.etc.Pair;
 
 import java.util.ArrayList;
 
@@ -11,7 +11,7 @@ import java.util.ArrayList;
 
 public class SegmentNeighbourhood extends ChangepointAlgorithm {
     private int kMax;
-    private ArrayList<ArrayList<Pair<Integer, Double>>> c;
+    private ArrayList<ArrayList<Pair>> c;
 
     public SegmentNeighbourhood(double penalty, int kMax, double penaltyFactor) {
         super(penalty, penaltyFactor);
@@ -25,10 +25,10 @@ public class SegmentNeighbourhood extends ChangepointAlgorithm {
     @Override
     protected ArrayList<Integer> perform() {
         ArrayList<Integer> changePoints = new ArrayList<Integer>();
-        c = new ArrayList<ArrayList<Pair<Integer, Double>>>();
+        c = new ArrayList<ArrayList<Pair>>();
 
         for(int i=0; i<data.size();i++){
-            c.set(0, new ArrayList<Pair<Integer, Double>>());
+            c.set(0, new ArrayList<Pair>());
             c.get(0).set(i, new Pair(0,getCosts(0,i)));
         }
 
@@ -42,16 +42,16 @@ public class SegmentNeighbourhood extends ChangepointAlgorithm {
         int currChangepointIndex = 0;
 
         for(int i=0; i<kMax;i++){
-            double currCosts = c.get(i).get(data.size()-1).getValue();
+            double currCosts = (double)c.get(i).get(data.size()-1).getData2();
             if(currCosts < minCosts){
                 minCosts = currCosts;
-                currChangepointIndex = c.get(i).get(data.size()-1).getKey();
+                currChangepointIndex = (int)c.get(i).get(data.size()-1).getData1();
             }
         }
 
         int i = currChangepointIndex;
         while(currChangepointIndex >= 1){
-            currChangepointIndex = c.get(currChangepointIndex).get(i).getKey();
+            currChangepointIndex = (int)c.get(currChangepointIndex).get(i).getData1();
             changePoints.add(currChangepointIndex);
             currChangepointIndex = currChangepointIndex-1;
         }
@@ -60,12 +60,12 @@ public class SegmentNeighbourhood extends ChangepointAlgorithm {
     }
 
 
-    private Pair<Integer, Double> getMin(int k, int t){
+    private Pair getMin(int k, int t){
         double minCosts = Double.MAX_VALUE;
         Pair out = null;
 
         for(int pi = k; k<t; pi++){
-            double currCosts = c.get(k-1).get(pi).getValue() + getCosts(pi+1, t);
+            double currCosts = (double)c.get(k-1).get(pi).getData2() + getCosts(pi+1, t);
             if(currCosts < minCosts){
                 out = new Pair(pi, currCosts);
                 minCosts = currCosts;

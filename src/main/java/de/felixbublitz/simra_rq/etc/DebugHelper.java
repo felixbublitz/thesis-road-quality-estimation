@@ -6,6 +6,7 @@ import de.felixbublitz.simra_rq.simra.GPSData;
 import de.felixbublitz.simra_rq.simra.SimraData;
 import de.felixbublitz.simra_rq.track.*;
 import de.felixbublitz.simra_rq.track.road.Road;
+import de.felixbublitz.simra_rq.track.road.RoadPath;
 import org.knowm.xchart.SwingWrapper;
 import org.knowm.xchart.XYChart;
 import org.knowm.xchart.XYChartBuilder;
@@ -14,6 +15,10 @@ import org.knowm.xchart.XYSeries;
 import java.awt.*;
 import java.util.ArrayList;
 import java.util.stream.Stream;
+
+/**
+ * Some helper methods to debug code
+ */
 
 public class DebugHelper {
 

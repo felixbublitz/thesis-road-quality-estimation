@@ -14,16 +14,16 @@ class RoadGeometryTest {
         Road r = new Road(db, "In den Ministergärten","Mitte");
         SimraData dataset = new SimraData("/home/felix/Documents/SimRa/rides/ride" + 17+ ".csv");
 
-        r.getPosition(dataset.getGPSData(2045, true));
+        r.getRoadGeometry().getPosition(dataset.getGPSData(2045, true));
 
-        r.getPosition(dataset.getGPSData(2045, true));
+        r.getRoadGeometry().getPosition(dataset.getGPSData(2045, true));
 
-        r.getPosition(dataset.getGPSData(2045, true));
-        r.getPosition(dataset.getGPSData(2356, true));
+        r.getRoadGeometry().getPosition(dataset.getGPSData(2045, true));
+        r.getRoadGeometry().getPosition(dataset.getGPSData(2356, true));
 
-        int pos = r.getPosition(new GPSData(52.51232293,13.3829604));
+        int pos = r.getRoadGeometry().getPosition(new GPSData(52.51232293,13.3829604));
 
-        GPSData out = r.getGPSPoint(pos);
+        GPSData out = r.getRoadGeometry().getGPSPoint(pos);
         int a = 2;
 
     }

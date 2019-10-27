@@ -1,8 +1,11 @@
 package de.felixbublitz.simra_rq.quality_index;
 
 import de.felixbublitz.simra_rq.database.Database;
-import de.felixbublitz.simra_rq.quality_index.QualityIndex;
-import javafx.util.Pair;
+import de.felixbublitz.simra_rq.etc.Pair;
+
+/**
+ * Implementation of dynamic quality index
+ */
 
 public class DynamicQualityIndex implements QualityIndex {
 
@@ -11,8 +14,8 @@ public class DynamicQualityIndex implements QualityIndex {
 
     public DynamicQualityIndex(Database db){
         Pair result =  db.getQualityIndex("dynamic");
-        minVariance = (double)result.getKey();
-        maxVariance = (double)result.getValue();
+        minVariance = (double)result.getData1();
+        maxVariance = (double)result.getData2();
     }
 
     @Override

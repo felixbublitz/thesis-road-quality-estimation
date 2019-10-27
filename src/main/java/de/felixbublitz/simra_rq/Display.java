@@ -7,7 +7,7 @@ import de.felixbublitz.simra_rq.quality_index.DynamicQualityIndex;
 import de.felixbublitz.simra_rq.quality_index.QualityIndex;
 import de.felixbublitz.simra_rq.simra.GPSData;
 import de.felixbublitz.simra_rq.track.road.Road;
-import de.felixbublitz.simra_rq.track.RoadPath;
+import de.felixbublitz.simra_rq.track.road.RoadPath;
 
 import java.awt.*;
 import java.util.ArrayList;
@@ -15,7 +15,6 @@ import java.util.ArrayList;
 /**
  * Basic Map View of RoughnessData
  */
-
 public class Display {
 
     private static Database db;
@@ -27,6 +26,11 @@ public class Display {
     private final static Color OVERLAY_COLOR =  new Color(150,150,150,160);
 
 
+    /**
+     * The entry point of application.
+     *
+     * @param args the input arguments
+     */
     public static void main(String[] args)
     {
         map = new Map(WIDTH, HEIGHT);

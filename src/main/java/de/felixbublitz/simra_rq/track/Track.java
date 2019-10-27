@@ -1,5 +1,6 @@
 package de.felixbublitz.simra_rq.track;
 
+import de.felixbublitz.simra_rq.Options;
 import de.felixbublitz.simra_rq.database.Database;
 import de.felixbublitz.simra_rq.simra.GPSData;
 import de.felixbublitz.simra_rq.simra.SimraData;
@@ -27,7 +28,6 @@ public class Track {
 
     public final static int MIN_SEGMENT_DISTANCE = 20; //meter
 
-    final String API_REVERSE_GEOCODING = "http://localhost/nominatim/reverse.php?";
     HashMap<String, Road> roads = new HashMap<String, Road>();
     ArrayList<TrackSegment> segments;
     double samplingRate;
@@ -116,6 +116,11 @@ public class Track {
 
         int i=0;
 
+        if(cleanedList.size() == 0) {
+            segments = cleanedList;
+            return;
+        }
+
         ArrayList<TrackSegment> cleanedList2 = new ArrayList<TrackSegment>();
         TrackSegment lastSegment = cleanedList.get(0);
 
@@ -158,7 +163,7 @@ public class Track {
      */
     private void addRoadToTrack(Road road, int i){
         TrackSegment ts = getLastSegment();
-        if(ts != null && ts.getRoad() == road && (ts.getEndPosition() == null  || ts.getRoad().getPosition(sd.getGPSData(i, true) )==null ||  Math.abs(ts.getEndPosition() - ts.getRoad().getPosition(sd.getGPSData(i, true))) <= 30 )){
+        if(ts != null && ts.getRoad() == road && (ts.getEndPosition() == null  || ts.getRoad().getRoadGeometry().getPosition(sd.getGPSData(i, true) )==null ||  Math.abs(ts.getEndPosition() - ts.getRoad().getRoadGeometry().getPosition(sd.getGPSData(i, true))) <= 30 )){
             segments.set(segments.indexOf(ts), new TrackSegment(road,sd, ts.getStart(), i));
         }else{
             segments.add(new TrackSegment(road,sd, i,i));
@@ -211,7 +216,7 @@ public class Track {
 
                 response = client.send(
                         HttpRequest
-                                .newBuilder(new URI(API_REVERSE_GEOCODING + String.join("&", parameters)))
+                                .newBuilder(new URI(Options.API_REVERSE_GEOCODING + "?" + String.join("&", parameters)))
                                 .GET()
                                 .build(),
                         HttpResponse.BodyHandlers.ofString()

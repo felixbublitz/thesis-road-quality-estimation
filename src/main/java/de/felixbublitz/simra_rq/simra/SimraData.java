@@ -6,6 +6,10 @@ import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.*;
 
+/**
+ * Representation of data recorded by Simra App
+ */
+
 public class SimraData {
     private ArrayList<Long> timeData;
     private ArrayList<GPSData> gpsData;

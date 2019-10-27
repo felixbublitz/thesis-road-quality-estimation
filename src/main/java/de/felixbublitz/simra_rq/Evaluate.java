@@ -2,7 +2,6 @@ package de.felixbublitz.simra_rq;
 import de.felixbublitz.simra_rq.changepoint.implementation.PELT;
 import de.felixbublitz.simra_rq.database.data.AnomalyData;
 import de.felixbublitz.simra_rq.database.data.RoughnessData;
-import de.felixbublitz.simra_rq.etc.DebugHelper;
 import de.felixbublitz.simra_rq.quality.anomaly.AnomalyDetection;
 import de.felixbublitz.simra_rq.quality.segments.DataSegment;
 import de.felixbublitz.simra_rq.quality.filter.Filter;

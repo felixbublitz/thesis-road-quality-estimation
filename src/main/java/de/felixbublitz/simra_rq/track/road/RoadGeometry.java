@@ -1,10 +1,9 @@
 package de.felixbublitz.simra_rq.track.road;
 
+import de.felixbublitz.simra_rq.Options;
 import de.felixbublitz.simra_rq.etc.GPSOperation;
 import de.felixbublitz.simra_rq.etc.ListOperation;
 import de.felixbublitz.simra_rq.simra.GPSData;
-import de.felixbublitz.simra_rq.track.RoadPath;
-import de.felixbublitz.simra_rq.track.road.Road;
 import org.json.JSONArray;
 
 import java.io.IOException;
@@ -17,15 +16,21 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.concurrent.TimeUnit;
 
+/**
+ * RoadGeometry
+ */
 
 public class RoadGeometry {
 
-    ArrayList<RoadPath> paths;
-    ArrayList<Integer>pathLengths;
-    Road road;
-    private final String API_SEARCH = "http://localhost/nominatim/search?";
-    private final int MAX_ROAD_ANGLE =90;
+    private ArrayList<RoadPath> paths;
+    private ArrayList<Integer> pathLengths;
+    private Road road;
+    private final int MAX_ROAD_ANGLE = 90;
 
+    /**
+     * Create road geometry
+     * @param road road
+     */
     public RoadGeometry(Road road){
         this.road = road;
         this.paths = getRoadPaths();
@@ -35,6 +40,12 @@ public class RoadGeometry {
             throw new IllegalArgumentException("couldn't find any road path");
 
     }
+
+    /**
+     * Create road geometry by road and road paths
+     * @param road road
+     * @param paths paths of road
+     */
     public RoadGeometry(Road road, ArrayList<RoadPath> paths){
         this.road = road;
         if(paths.size() == 0)
@@ -43,6 +54,10 @@ public class RoadGeometry {
         this.pathLengths = getPathLengths();
     }
 
+    /**
+     * Get length of road
+     * @return road length
+     */
     public int getLength(){
         int len = 0;
         for(RoadPath rp : paths){
@@ -50,6 +65,11 @@ public class RoadGeometry {
         }
         return len;
     }
+
+    /**
+     * Returns lengths of all path of road geometry
+     * @return list of lengths
+     */
     private ArrayList<Integer> getPathLengths(){
         ArrayList<Integer> lengths = new  ArrayList<Integer>();
         for(RoadPath p : paths){
@@ -57,6 +77,12 @@ public class RoadGeometry {
         }
         return lengths;
     }
+
+    /**
+     * Returns path that contains given road position
+     * @param position road position
+     * @return road path
+     */
     public RoadPath getPath(int position){
         int pos = 0;
         for(RoadPath path : paths){
@@ -67,6 +93,13 @@ public class RoadGeometry {
         }
         return null;
     }
+
+    /**
+     * Get relative road position on given path
+     * @param position absolute road position
+     * @param p road path
+     * @return relative position
+     */
     public int getRelativePosition(int position, RoadPath p){
         int index = paths.indexOf(p);
         int offset = (int)(index>0 ?ListOperation.getSum(pathLengths.subList(0,index-1)) : 0);
@@ -75,39 +108,48 @@ public class RoadGeometry {
         }
         return position;
     }
+
+    /**
+     * Returns gps point by given road position
+     * @param absolutePosition absolute road position
+     * @return gps point
+     */
     public GPSData getGPSPoint(int absolutePosition){
         RoadPath path = getPath(absolutePosition);
         if(path == null)
             return null;
-
         return path.getGPSPoint(getRelativePosition(absolutePosition, path));
     }
+
+    /**
+     * Returns list of road paths
+     * @return list of road paths
+     */
     public ArrayList<RoadPath> getPaths(){
         return paths;
     }
-    public RoadPath getPath(Integer start, Integer end) {
 
-        if(start == null || end == null){
-            return null;
-        }
-        RoadPath path = getPath(start);
-        ArrayList<RoadPath> out = new ArrayList<>();
-
-        return path.getIntersection(start,end);
-
-    }
+    /**
+     * Returns road position
+     * @param gps gps point
+     * @return road position
+     */
     public Integer getPosition(GPSData gps){
         for(int i=0; i<paths.size(); i++){
             Integer pos = paths.get(i).getPosition(gps);
             if(pos != null)
                 return (int)(i>0 ? ListOperation.getSum(pathLengths.subList(0,i)) : 0) + pos;
         }
-
         return  null;
     }
+
+    /**
+     * Returns list of gps data list, which represents road
+     * @return list of gps node list
+     */
     private ArrayList<ArrayList<GPSData>> getNodes(){
         int tries = 0;
-        while (tries <= 20) {
+        while (tries <= Options.API_TRIES) {
             tries++;
             try {
                 HttpClient client = HttpClient.newHttpClient();
@@ -122,10 +164,9 @@ public class RoadGeometry {
                         "format=jsonv2"
                 };
 
-                int c = 2;
                 response = client.send(
                         HttpRequest
-                                .newBuilder(new URI(API_SEARCH + String.join("&", parameters).replace(" ", "%20")))
+                                .newBuilder(new URI(Options.API_SEARCH + "?" + String.join("&", parameters).replace(" ", "%20")))
                                 .GET()
                                 .build(),
                         HttpResponse.BodyHandlers.ofString()
@@ -133,19 +174,16 @@ public class RoadGeometry {
                 int statusCode = response.statusCode();
 
 
-                if (statusCode == 500) {
-                    TimeUnit.MILLISECONDS.sleep(100);
+                if (statusCode == Options.HTTP_INTERNAL_ERROR) {
+                    TimeUnit.MILLISECONDS.sleep(Options.API_DELAY);
                     continue;
                 }
 
-                if (statusCode != 200)
+                if (statusCode != Options.HTTP_SUCCESS)
                     throw new IllegalStateException("API request error: " + statusCode);
-
-
 
                 JSONArray json = new JSONArray(response.body());
                 ArrayList<ArrayList<GPSData>> rawNodes = new ArrayList<ArrayList<GPSData>>();
-
 
                 for (int i = 0; i < json.length(); i++) {
                     if (json.getJSONObject(i).getJSONObject("address").has("road") && json.getJSONObject(i).getJSONObject("address").getString("road").equals(road.getName()) &&
@@ -177,14 +215,13 @@ public class RoadGeometry {
                             nodes = nodes.getJSONArray(0);
                         }
 
-
                         ArrayList<GPSData> group = new ArrayList<GPSData>();
                         for (int j = 0; j < nodes.length(); j++) {
                             try {
                                 GPSData gps = new GPSData(nodes.getJSONArray(j).getDouble(1), nodes.getJSONArray(j).getDouble(0));
                                 group.add(gps);
                             } catch (Exception e) {
-                                int a = 2;
+                                return null;
                             }
 
                         }
@@ -206,11 +243,14 @@ public class RoadGeometry {
         throw new IllegalStateException("API not available");
 
     }
+
+    /**
+     * Get road paths of road from nominatim
+     * @return list of road paths
+     */
     private ArrayList<RoadPath>getRoadPaths(){
 
-
         ArrayList<ArrayList<GPSData>> groups = getNodes();
-
         ArrayList<RoadPath> out = new ArrayList<RoadPath>();
 
         while(groups.size() != 0) {
@@ -218,7 +258,8 @@ public class RoadGeometry {
             int longestLength = 0;
             //get longest Segment
             for (int i = 0; i < groups.size(); i++) {
-                int len = getSegmentLength(groups.get(i));
+                RoadPath rp = new RoadPath(groups.get(i));
+                int len = rp.getLength();
                 if (len > longestLength) {
                     longestItem = i;
                     longestLength = len;
@@ -245,20 +286,17 @@ public class RoadGeometry {
 
             out.add(new RoadPath(groups_out));
 
-
         }
 
         return out;
-
     }
-    private int getSegmentLength(ArrayList<GPSData> segment){
-        int len = 0;
-        for(int i=0; i<segment.size()-1;i++){
-            len += segment.get(i).getDistanceTo(segment.get(i+1));
-        }
 
-        return len;
-    }
+    /**
+     * Merge two list of gps nodes if they are connected
+     * @param g1 list of gps nodes
+     * @param g2 list of gps nodes
+     * @return merged list of gps nodes
+     */
     private ArrayList<GPSData> appendGroup(ArrayList<GPSData> g1, ArrayList<GPSData> g2){
 
         ArrayList<GPSData> out = new ArrayList<GPSData>();
@@ -289,9 +327,7 @@ public class RoadGeometry {
             out.addAll(g2);
             return out;
         }
-
         return null;
-
     }
 
 }

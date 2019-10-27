@@ -9,8 +9,8 @@
         <module name="simra-roadquality" />
       </profile>
     </annotationProcessing>
-    <bytecodeTargetLevel>
-      <module name="simra-roadquality" target="1.11" />
+    <bytecodeTargetLevel target="11">
+      <module name="simra-roadquality" target="11" />
     </bytecodeTargetLevel>
   </component>
 </project>

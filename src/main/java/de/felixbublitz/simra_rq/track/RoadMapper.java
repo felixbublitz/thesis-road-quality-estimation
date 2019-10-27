@@ -7,10 +7,21 @@ import de.felixbublitz.simra_rq.simra.SimraData;
 
 import java.util.ArrayList;
 
+/**
+ * Creates DB ready objects from track and data partition data.
+ */
+
 public class RoadMapper {
 
-    final static int MIN_DIST = 20;
+    private final static int MIN_DIST = 20;
 
+    /**
+     * Returns list of db ready roughness data
+     * @param simraData simradata object
+     * @param dataSegments segmentation of data
+     * @param track track
+     * @return list of db ready roughness data
+     */
     public static ArrayList<RoughnessData> mapSegments(SimraData simraData, ArrayList<DataSegment> dataSegments, Track track){
         ArrayList<RoughnessData> out = new ArrayList<RoughnessData>();
 
@@ -21,8 +32,8 @@ public class RoadMapper {
             for(int i=dataSegments.indexOf(startSegment); i<=dataSegments.indexOf(endSegment); i++){
                 int start = i == dataSegments.indexOf(startSegment) ? ts.getStart() : dataSegments.get(i).getStart();
                 int end = i == dataSegments.indexOf(endSegment) ? ts.getEnd() : dataSegments.get(i).getEnd();
-                int posStart = ts.getRoad().getPosition(simraData.getGPSData(start,true));
-                int posEnd = ts.getRoad().getPosition(simraData.getGPSData(end, true));
+                int posStart = ts.getRoad().getRoadGeometry().getPosition(simraData.getGPSData(start,true));
+                int posEnd = ts.getRoad().getRoadGeometry().getPosition(simraData.getGPSData(end, true));
 
                 if(posEnd-posStart > MIN_DIST)
                     out.add(new RoughnessData(ts.getRoad(), simraData.getRecordingDate(), posStart , posEnd, dataSegments.get(i).getVariance()));
@@ -31,15 +42,25 @@ public class RoadMapper {
 
         return out;
     }
+
+    /**
+     * Returns list of db ready roughness data
+     * @param simraData simradata object
+     * @param anomalyData anomolies of data
+     * @param track track
+     * @return list of db ready roughness data
+     */
     public static ArrayList<AnomalyData>mapAnomalys(SimraData simraData, ArrayList<Integer> anomalyData, Track track){
         ArrayList<AnomalyData> out = new ArrayList<AnomalyData>();
         for(Integer anomaly : anomalyData){
             if(track.getSegment(anomaly) != null)
-                out.add(new AnomalyData(track.getSegment(anomaly).getRoad(), simraData.getRecordingDate(), track.getSegment(anomaly).getRoad().getPosition(simraData.getGPSData(anomaly, true))));
+                out.add(new AnomalyData(track.getSegment(anomaly).getRoad(), simraData.getRecordingDate(), track.getSegment(anomaly).getRoad().getRoadGeometry().getPosition(simraData.getGPSData(anomaly, true))));
         }
 
         return out;
     }
+
+
     private static DataSegment getDataSegment(ArrayList<DataSegment> dataSegments, int x){
         for(DataSegment ds : dataSegments){
             if(ds.getStart() <= x && ds.getEnd() >= x)
